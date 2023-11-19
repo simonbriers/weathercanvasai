@@ -9,6 +9,8 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
+# Test logging messages at various levels
+
 class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
     
@@ -67,7 +69,6 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     model=gpt_model_name, 
                     messages=[{"role": "user", "content": "Say Test"}]
                 )
-
             completion = await self.hass.async_add_executor_job(make_api_call)
             _LOGGER.debug('OpenAI API response: %s', completion)
             return True, None
