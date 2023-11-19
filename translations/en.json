@@ -1,0 +1,28 @@
+{
+    "config": {
+      "title": "Weather Image Generator",
+      "step": {
+        "user": {
+          "description": "Configure your API keys and preferences for the Weather Image Generator.",
+          "data": {
+            "openai_api_key": "OpenAI API Key",
+            "openweathermap_api_key": "OpenWeatherMap API Key",
+            "latitude": "Latitude",
+            "longitude": "Longitude",
+            "units": "Units",
+            "language": "Language",
+            "model_name": "DALL-E Model"
+          }
+        }
+      },
+      "error": {
+        "cannot_connect": "Cannot connect to the API.",
+        "invalid_auth": "Invalid authentication credentials."
+      },
+      "abort": {
+        "already_configured": "Device is already configured."
+      }
+    }
+  }
+  
+  

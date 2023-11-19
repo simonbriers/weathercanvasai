@@ -1,0 +1,20 @@
+{
+    "domain": "weather_image_generator",
+    "name": "Weather Image Generator",
+    "codeowners": ["@simonbriers"],
+    "config_flow": true,
+    "documentation": "https://github.com/simonbriers/dalle3_weatherimages",
+    "iot_class": "cloud_polling",
+    "issue_tracker": "https://github.com/simonbriers/dalle3_weatherimages/issues",
+    "quality_scale": "internal",
+    "requirements": [
+      "requests",
+      "python-dotenv",
+      "PyYAML", 
+      "openai",
+      "Pillow", 
+      "pycountry"
+  ],
+    "version": "1.0"
+  }
+  
