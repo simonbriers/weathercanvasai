@@ -29,11 +29,6 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         # Define your data schema for the form with default values
         data_schema = vol.Schema({
             vol.Required('openai_api_key', default="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"): str,
-            vol.Required('openweathermap_api_key', default="24f43751cf62798ac04e427a7082606e"): str,
-            vol.Required('latitude', default=self.hass.config.latitude): cv.latitude,
-            vol.Required('longitude', default=self.hass.config.longitude): cv.longitude,
-            vol.Required('units', default='metric'): vol.In(['metric', 'imperial']),
-            vol.Required('language', default='en'): str,
             vol.Optional('image_model_name', default='dall-e-2'): vol.In(['dall-e-2', 'dall-e-3']),
             vol.Optional('gpt_model_name', default='gpt-3.5-turbo'): vol.In(['gpt-3.5-turbo', 'gpt-4']),
         })
@@ -41,17 +36,14 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             gpt_model_name = user_input.get('gpt_model_name', 'gpt-3.5-turbo')  # Get the GPT model name or default
             openai_test_success, openai_error = await self.test_openai_api(user_input['openai_api_key'], gpt_model_name)
-            openweather_test_success = await self.test_openweather_api(user_input['openweathermap_api_key'])
-
+            
             # Check the results of the API tests and set errors if they failed
             if not openai_test_success:
                 errors['openai_api_key'] = openai_error or 'openai_api_test_fail'
-            if not openweather_test_success:
-                errors['openweathermap_api_key'] = 'openweather_api_test_fail'
-
+            
             # If there are no errors, proceed to create the config entry
             if not errors:
-                _LOGGER.info("All API tests passed. Ready to create config entry.")
+                _LOGGER.info("API test to ChatGPT passed. Ready to create config entry.")
                 # Placeholder for creating config entry
                 # return self.async_create_entry(title="Weather Image Generator", data=user_input)
 
@@ -74,8 +66,4 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         except Exception as e:
             _LOGGER.error('Error testing OpenAI API: %s', e)
             return False, str(e)
-    
-    async def test_openweather_api(self, api_key):
-        """Placeholder method to test the OpenWeatherMap API key."""
-        _LOGGER.debug('Testing OpenWeatherMap API Key: %s', api_key)
-        return True  # Assume success for testing
+        

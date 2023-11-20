@@ -5,13 +5,7 @@
         "user": {
           "description": "Configure your API keys and preferences for the Weather Image Generator.",
           "data": {
-            "openai_api_key": "OpenAI API Key",
-            "openweathermap_api_key": "OpenWeatherMap API Key",
-            "latitude": "Latitude",
-            "longitude": "Longitude",
-            "units": "Units",
-            "language": "Language",
-            "model_name": "DALL-E Model"
+            "openai_api_key": "OpenAI API Key"
           }
         }
       },
