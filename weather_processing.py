@@ -77,13 +77,22 @@ async def async_calculate_day_segment(hass: HomeAssistant) -> str:
         fraction = (now - sunrise_time).total_seconds() / day_length
 
     # Find the matching description in the lookup table
-    for key, description in lookup_table.items():
-        lower_bound, upper_bound = key.split('-')
-        if lower_bound.endswith('+'):
-            if fraction >= float(lower_bound[:-1]):
-                return description
-        elif float(lower_bound) <= fraction < float(upper_bound):
-            return description
+    _LOGGER.info(f"Current time: {now}")
+    _LOGGER.info(f"Sunrise time: {sunrise_time}")
+    _LOGGER.info(f"Sunset time: {sunset_time}")
+    _LOGGER.info(f"Fraction of the day: {fraction}")
 
+    for key, description in lookup_table.items():
+        _LOGGER.info(f"Checking range: {key}")
+    
+    # Existing comparison logic...
+        if '+' in key:  # Handle open-ended ranges like '1.5+'
+            lower_bound = key[:-1]  # Remove the '+' and get the number
+            if fraction >= float(lower_bound):
+                return description
+        else:
+            lower_bound, upper_bound = key.split('-')
+            if float(lower_bound) <= fraction < float(upper_bound):
+                return description
     return "Unknown time"
 
