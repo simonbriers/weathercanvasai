@@ -13,7 +13,8 @@
       "PyYAML", 
       "openai",
       "Pillow", 
-      "pycountry"
+      "pycountry",
+      "pytz"
   ],
     "version": "1.0"
   }

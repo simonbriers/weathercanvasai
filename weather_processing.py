@@ -1,6 +1,10 @@
-from datetime import datetime
+import logging
 from homeassistant.core import HomeAssistant
+import datetime
 import asyncio
+import pytz
+
+_LOGGER = logging.getLogger(__name__)
 
 async def generate_weather_prompt(hass, entity_id):
     weather_data = hass.states.get(entity_id).attributes # Fetch Met.no weather data
@@ -42,17 +46,26 @@ async def async_calculate_day_segment(hass: HomeAssistant) -> str:
         "1.5+": "the darkest hour"
     }
 
-    # Get current time
-    now = datetime.datetime.now()
+    # Get current time in UTC
+    now = datetime.datetime.now(datetime.timezone.utc)
 
     # Get sunrise and sunset times from sun integration
     sun_state = hass.states.get('sun.sun')
     sunrise = sun_state.attributes.get('next_rising')
     sunset = sun_state.attributes.get('next_setting')
 
-    # Parse sunrise and sunset into datetime objects
-    sunrise_time = datetime.datetime.fromisoformat(sunrise)
-    sunset_time = datetime.datetime.fromisoformat(sunset)
+    # Check if sunrise and sunset times are available
+    if sunrise is None or sunset is None:
+        _LOGGER.error("Sunrise or sunset time is not available.")
+        return "Unknown time"
+
+    try:
+        # Parse sunrise and sunset into datetime objects
+        sunrise_time = datetime.datetime.fromisoformat(sunrise)
+        sunset_time = datetime.datetime.fromisoformat(sunset)
+    except Exception as e:
+        _LOGGER.error(f"Error parsing sunrise/sunset time: {e}")
+        return "Unknown time"
 
     # Calculate the fraction of the day or night
     if now < sunrise_time:
