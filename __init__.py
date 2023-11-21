@@ -1,8 +1,10 @@
 import logging
+import datetime
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from .const import DOMAIN
-from .weather_processing import async_calculate_day_segment
+from .weather_processing import async_calculate_day_segment, get_season
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,17 +29,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     async def handle_weather2img(call):
         # Retrieve configuration data
         service_data = hass.data[DOMAIN][entry.entry_id]
-        _LOGGER.info(f"OpenAI API Key: {service_data['openai_api_key']}")
-        _LOGGER.info(f"Image Model Name: {service_data['image_model_name']}")
-        _LOGGER.info(f"GPT Model Name: {service_data['gpt_model_name']}")
 
     # Register the weather2img service
     hass.services.async_register(DOMAIN, 'weather2img', handle_weather2img)
 
+    # Define the test_servive handler
     async def handle_test_service(call):
         # Call your function and log the result
         day_segment = await async_calculate_day_segment(hass)
-        _LOGGER.info(f"Calculated Day Segment: {day_segment}")
+        now = datetime.datetime.now()
+        season = get_season(now)
+        _LOGGER.info(f"Calculated Day Segment and season: {day_segment} in {season}")
 
     hass.services.async_register(DOMAIN, 'test_day_segment', handle_test_service)
 

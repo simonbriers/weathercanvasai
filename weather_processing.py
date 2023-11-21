@@ -8,11 +8,8 @@ _LOGGER = logging.getLogger(__name__)
 
 async def generate_weather_prompt(hass, entity_id):
     weather_data = hass.states.get(entity_id).attributes # Fetch Met.no weather data
-    sun_state = hass.states.get('sun.sun').state # Determine sun position,'above_horizon' or 'below_horizon'
-    now = datetime.now()
-    season = get_season(now)
-
-async def get_season(now):
+    
+def get_season(now):
     month = now.month
     if 3 <= month <= 5:
         return 'Spring'
@@ -46,45 +43,36 @@ async def async_calculate_day_segment(hass: HomeAssistant) -> str:
         "1.5+": "the darkest hour"
     }
 
-    # Get current time in UTC
-    now = datetime.datetime.now(datetime.timezone.utc)
+    now = datetime.datetime.now(datetime.timezone.utc).time()
 
-    # Get sunrise and sunset times from sun integration
     sun_state = hass.states.get('sun.sun')
-    sunrise = sun_state.attributes.get('next_rising')
-    sunset = sun_state.attributes.get('next_setting')
+    sunrise = datetime.datetime.fromisoformat(sun_state.attributes.get('next_rising')).time()
+    sunset = datetime.datetime.fromisoformat(sun_state.attributes.get('next_setting')).time()
 
-    # Check if sunrise and sunset times are available
-    if sunrise is None or sunset is None:
-        _LOGGER.error("Sunrise or sunset time is not available.")
-        return "Unknown time"
-
-    try:
-        # Parse sunrise and sunset into datetime objects
-        sunrise_time = datetime.datetime.fromisoformat(sunrise)
-        sunset_time = datetime.datetime.fromisoformat(sunset)
-    except Exception as e:
-        _LOGGER.error(f"Error parsing sunrise/sunset time: {e}")
-        return "Unknown time"
-
-    # Calculate the fraction of the day or night
-    if now < sunrise_time:
-        fraction = (now - sunrise_time).total_seconds() / (24 * 3600)
-    elif now > sunset_time:
-        fraction = (now - sunset_time).total_seconds() / (24 * 3600) + 1
+    # Determine if it's day or night
+    if sunrise < now < sunset:
+        # It's day
+        day_length = datetime.datetime.combine(datetime.date.today(), sunset) - datetime.datetime.combine(datetime.date.today(), sunrise)
+        time_passed = datetime.datetime.combine(datetime.date.today(), now) - datetime.datetime.combine(datetime.date.today(), sunrise)
     else:
-        day_length = (sunset_time - sunrise_time).total_seconds()
-        fraction = (now - sunrise_time).total_seconds() / day_length
+        # It's night
+        if now < sunrise:
+            # Before sunrise, calculate time since yesterday's sunset
+            yesterday_sunset = sunset - datetime.timedelta(days=1)
+            day_length = datetime.datetime.combine(datetime.date.today(), sunrise) - datetime.datetime.combine(datetime.date.today(), yesterday_sunset)
+            time_passed = datetime.datetime.combine(datetime.date.today(), now) - datetime.datetime.combine(datetime.date.today(), yesterday_sunset)
+        else:
+            # After sunset, calculate time until tomorrow's sunrise
+            tomorrow_sunrise = sunrise + datetime.timedelta(days=1)
+            day_length = datetime.datetime.combine(datetime.date.today(), tomorrow_sunrise) - datetime.datetime.combine(datetime.date.today(), sunset)
+            time_passed = datetime.datetime.combine(datetime.date.today(), now) - datetime.datetime.combine(datetime.date.today(), sunset)
 
+    fraction = time_passed / day_length
     # Find the matching description in the lookup table
     _LOGGER.info(f"Current time: {now}")
-    _LOGGER.info(f"Sunrise time: {sunrise_time}")
-    _LOGGER.info(f"Sunset time: {sunset_time}")
     _LOGGER.info(f"Fraction of the day: {fraction}")
 
     for key, description in lookup_table.items():
-        _LOGGER.info(f"Checking range: {key}")
-    
     # Existing comparison logic...
         if '+' in key:  # Handle open-ended ranges like '1.5+'
             lower_bound = key[:-1]  # Remove the '+' and get the number
