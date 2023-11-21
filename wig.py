@@ -60,7 +60,7 @@ def fetch_weather_data(api_key, latitude, longitude, units="metric", language="e
 
 # function to prepare chatgpt call for a prompt that can be used by dalle
 def generate_weather_prompt(weather_data):
-# Extract timestamps and location
+    # Extract timestamps and location
     current_timestamp = weather_data['dt']
     sunrise_timestamp = weather_data['sys']['sunrise']
     sunset_timestamp = weather_data['sys']['sunset']

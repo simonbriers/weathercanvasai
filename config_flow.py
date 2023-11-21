@@ -47,7 +47,7 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             if not errors:
                 _LOGGER.info("API test to ChatGPT passed. Ready to create config entry.")
                 # Placeholder for creating config entry
-                # return self.async_create_entry(title="Weather Image Generator", data=user_input)
+                return self.async_create_entry(title="Weather Image Generator", data=user_input)
 
         # Show the form again with any errors
         return self.async_show_form(step_id="user", data_schema=data_schema, errors=errors)
