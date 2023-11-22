@@ -3,6 +3,9 @@ from homeassistant.core import HomeAssistant
 import datetime
 import asyncio
 import pytz
+from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
+from geopy.geocoders import Nominatim
+import openai
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,63 +27,178 @@ async def async_calculate_day_segment(hass: HomeAssistant) -> str:
     """Calculate the current segment of the day based on sunrise and sunset times."""
 
     # Internal lookup table for time of day
-    lookup_table = {
-        "0.0-0.1": "early morning",
-        "0.1-0.2": "morning",
+    day_lookup_table = {
+            # ... [your time segments for the day] ...
+    }
+
+    # Internal lookup table for time of night
+    night_lookup_table = {
+            # ... [your time segments for the night] ...
+    }
+    
+    # Internal lookup table for time of day
+    day_lookup_table = {
+        "0.0-0.1": "sunrise",
+        "0.1-0.2": "early morning",
         "0.2-0.3": "mid-morning",
         "0.3-0.4": "late morning",
-        "0.4-0.5": "around noon",
+        "0.4-0.5": "noon",
         "0.5-0.6": "early afternoon",
         "0.6-0.7": "mid-afternoon",
         "0.7-0.8": "late afternoon",
-        "0.8-0.9": "early evening",
-        "0.9-1.0": "evening",
-        "1.0-1.1": "getting dark",
-        "1.1-1.2": "night",
-        "1.2-1.3": "late at night",
-        "1.3-1.4": "the deep night",
-        "1.4-1.5": "the early hours",
-        "1.5+": "the darkest hour"
+        "0.8-0.9": "dusk",
+        "0.9-1.0": "sunset",
+        }
+    night_lookup_table = {
+    "0.0-0.1": "twilight",
+    "0.1-0.2": "early night",
+    "0.2-0.3": "nightfall",
+    "0.3-0.4": "midnight hours",
+    "0.4-0.5": "late night",
+    "0.5-0.6": "deep night",
+    "0.6-0.7": "quiet hours",
+    "0.7-0.8": "pre-dawn",
+    "0.8-0.9": "dawn's first light",
+    "0.9-1.0": "dawn",
     }
 
-    now = datetime.datetime.now(datetime.timezone.utc).time()
+    now = datetime.datetime.now(datetime.timezone.utc)
+    current_time = now.time()  # Extracting only the time component
 
-    sun_state = hass.states.get('sun.sun')
-    sunrise = datetime.datetime.fromisoformat(sun_state.attributes.get('next_rising')).time()
-    sunset = datetime.datetime.fromisoformat(sun_state.attributes.get('next_setting')).time()
+    sun_state = hass.states.get('sun.sun').state
+    sun_attrs = hass.states.get('sun.sun').attributes
+    sunrise_time = datetime.datetime.fromisoformat(sun_attrs['next_rising']).time()
+    sunset_time = datetime.datetime.fromisoformat(sun_attrs['next_setting']).time()
 
-    # Determine if it's day or night
-    if sunrise < now < sunset:
-        # It's day
-        day_length = datetime.datetime.combine(datetime.date.today(), sunset) - datetime.datetime.combine(datetime.date.today(), sunrise)
-        time_passed = datetime.datetime.combine(datetime.date.today(), now) - datetime.datetime.combine(datetime.date.today(), sunrise)
+    # Calculate the duration of the day
+    day_length = datetime.datetime.combine(datetime.date.min, sunset_time) - \
+                 datetime.datetime.combine(datetime.date.min, sunrise_time)
+    # Calculate the duration of the night
+    night_length = datetime.timedelta(hours=24) - day_length
+
+    if sun_state == 'above_horizon':
+        # It's daytime
+        time_passed = datetime.datetime.combine(datetime.date.min, current_time) - \
+                      datetime.datetime.combine(datetime.date.min, sunrise_time)
+        period_length = day_length
+        lookup_table = day_lookup_table
     else:
-        # It's night
-        if now < sunrise:
-            # Before sunrise, calculate time since yesterday's sunset
-            yesterday_sunset = sunset - datetime.timedelta(days=1)
-            day_length = datetime.datetime.combine(datetime.date.today(), sunrise) - datetime.datetime.combine(datetime.date.today(), yesterday_sunset)
-            time_passed = datetime.datetime.combine(datetime.date.today(), now) - datetime.datetime.combine(datetime.date.today(), yesterday_sunset)
-        else:
-            # After sunset, calculate time until tomorrow's sunrise
-            tomorrow_sunrise = sunrise + datetime.timedelta(days=1)
-            day_length = datetime.datetime.combine(datetime.date.today(), tomorrow_sunrise) - datetime.datetime.combine(datetime.date.today(), sunset)
-            time_passed = datetime.datetime.combine(datetime.date.today(), now) - datetime.datetime.combine(datetime.date.today(), sunset)
+        # It's nighttime
+        time_passed = datetime.datetime.combine(datetime.date.min, current_time) - \
+                      datetime.datetime.combine(datetime.date.min, sunset_time)
+        period_length = night_length
+        lookup_table = night_lookup_table
+    fraction = time_passed.total_seconds() / period_length.total_seconds()
 
-    fraction = time_passed / day_length
+    #_LOGGER.debug(f"Day Length: {day_length}, Night Length: {night_length}, Time Passed: {time_passed}, Fraction of Period Passed: {fraction}")
+
     # Find the matching description in the lookup table
-    _LOGGER.info(f"Current time: {now}")
-    _LOGGER.info(f"Fraction of the day: {fraction}")
-
     for key, description in lookup_table.items():
-    # Existing comparison logic...
-        if '+' in key:  # Handle open-ended ranges like '1.5+'
-            lower_bound = key[:-1]  # Remove the '+' and get the number
+        if '+' in key:
+            lower_bound = key[:-1]
             if fraction >= float(lower_bound):
                 return description
         else:
             lower_bound, upper_bound = key.split('-')
             if float(lower_bound) <= fraction < float(upper_bound):
                 return description
+
     return "Unknown time"
 
+async def async_get_home_zone_address(hass: HomeAssistant) -> str:
+    # Return a formatted address string for the home zone.
+    home_zone = hass.states.get('zone.home')
+    if home_zone:
+        latitude = home_zone.attributes.get(CONF_LATITUDE)
+        longitude = home_zone.attributes.get(CONF_LONGITUDE)
+
+        def _reverse_geocode():
+            geolocator = Nominatim(user_agent="home_assistant")
+            return geolocator.reverse((latitude, longitude))
+        location = await hass.async_add_executor_job(_reverse_geocode)
+        if location and 'address' in location.raw:
+            address = location.raw['address']
+            town = address.get('town', address.get('city'))
+            state = address.get('state')
+            country = address.get('country')
+
+            formatted_address = f"{town} in {state} {country}" if all([town, state, country]) else "Unknown Location"
+            return formatted_address
+    return "Unknown Location"
+
+async def async_get_weather_conditions(hass: HomeAssistant) -> str:
+    # Get the state of the weather entity
+    weather_data = hass.states.get('weather.forecast_home')
+
+    if weather_data:
+        # Extract required attributes
+        temperature = weather_data.attributes.get('temperature')
+        cloud_coverage = weather_data.attributes.get('cloud_coverage', 0)  # Default to 0 if not available
+        weather_conditions = weather_data.state  # 'sunny' in this case
+
+        # Cloudiness description table
+        cloudiness_descriptions = {
+            0: "The sky is completely clear.",
+            10: "A few wisps of clouds dot the sky.",
+            20: "Scattered clouds gently float by.",
+            30: "A patchwork of clouds adorns the sky.",
+            40: "Partly cloudy with blue sky peeking through.",
+            50: "A balanced mix of sun and clouds.",
+            60: "More clouds than sun overhead.",
+            70: "The sky is mostly cloudy.",
+            80: "Thick clouds blanket most of the sky.",
+            90: "The sky is grey and heavily clouded.",
+            100: "Clouds completely cover the sky.",
+        }
+
+        # Find the closest key in the dictionary to the cloud coverage value
+        closest_cloudiness = min(cloudiness_descriptions.keys(), key=lambda k: abs(k - cloud_coverage))
+        cloudiness_desc = cloudiness_descriptions[closest_cloudiness]
+
+        # Construct your prompt using the weather data
+        prompt = f"It's a {weather_conditions} day with a temperature of {temperature}°C. {cloudiness_desc}"
+
+        return prompt
+    else:
+        _LOGGER.error("Weather data could not be retrieved.")
+        return "Weather data could not be retrieved."
+    
+async def async_create_dalle_prompt(hass: HomeAssistant, chatgpt_in: str, config_data: dict) -> str:
+    openai_api_key = config_data.get("openai_api_key")
+    chatgpt_model = config_data.get("gpt_model_name", 'gpt-3.5-turbo')
+    
+    # Check if OpenAI API key is available
+    if not openai_api_key:
+        _LOGGER.error("OpenAI API key is not configured.")
+        return "Error: OpenAI API key is not configured."
+
+    # System instruction for DALL-E prompt creation
+    system_instruction = "Create a succinct DALL-E prompt under 100 words, focusing on the most visually striking aspects of the given city/region, weather, and time of day. Highlight key elements that define the scene's character, such as specific landmarks, weather effects, or cultural features, in a direct and vivid manner. Avoid elaborate descriptions; instead, aim for a prompt that vividly captures the essence of the scene in a concise format, suitable for generating a distinct and compelling image."
+
+    def make_api_call():
+        openai.api_key = openai_api_key
+        return openai.ChatCompletion.create(
+            model=chatgpt_model,
+            messages=[
+                {"role": "system", "content": system_instruction},
+                {"role": "user", "content": chatgpt_in}
+            ],
+            temperature=1,
+            max_tokens=256,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0
+        )
+
+    try:
+        response = await hass.async_add_executor_job(make_api_call)
+
+        # Check if the response is valid and contains choices
+        if response and response.choices and len(response.choices) > 0:
+            chatgpt_prompt = response.choices[0].message.content
+            return chatgpt_prompt.strip()
+    except Exception as e:
+        _LOGGER.error(f"Error calling OpenAI API: {e}")
+        return f"Error: {str(e)}"
+
+    return "Error: No response from ChatGPT."

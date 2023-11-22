@@ -3,8 +3,13 @@ import datetime
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from .const import DOMAIN
-from .weather_processing import async_calculate_day_segment, get_season
-
+from .weather_processing import async_calculate_day_segment, get_season, async_get_home_zone_address, async_get_weather_conditions, async_create_dalle_prompt
+from homeassistant.const import (
+    CONF_ID,
+    CONF_LATITUDE,
+    CONF_LONGITUDE,
+    CONF_NAME,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,6 +29,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         "image_model_name": config_data.get("image_model_name"),
         "gpt_model_name": config_data.get("gpt_model_name"),
     }
+    # Log the data stored under DOMAIN
+    #_LOGGER.debug(f"{DOMAIN} data: {hass.data[DOMAIN]}")
 
     # Define the weather2img service handler
     async def handle_weather2img(call):
@@ -33,14 +40,42 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # Register the weather2img service
     hass.services.async_register(DOMAIN, 'weather2img', handle_weather2img)
 
-    # Define the test_servive handler
-    async def handle_test_service(call):
-        # Call your function and log the result
+    # Define the create gpt prompt service handler
+    async def create_gpt_prompt_service(call):
+        # Get daypart and season
         day_segment = await async_calculate_day_segment(hass)
         now = datetime.datetime.now()
         season = get_season(now)
-        _LOGGER.info(f"Calculated Day Segment and season: {day_segment} in {season}")
+        
+        # Get formatted address from the home zone
+        formatted_address = await async_get_home_zone_address(hass)
+        # Get weather conditions
+        weather_prompt = await async_get_weather_conditions(hass)
 
-    hass.services.async_register(DOMAIN, 'test_day_segment', handle_test_service)
+        # Combine the information into chatgpt_in, to be sent to chatgpt next and receive chatgpt_out
+        chatgpt_in = f"In {formatted_address}, it is {day_segment} in {season}. {weather_prompt}"
 
+        # Log the combined information
+        #_LOGGER.debug(chatgpt_in)
+
+        # Ensure chatgpt_in is not empty
+        if not chatgpt_in:
+            _LOGGER.error("No input string provided for DALL-E prompt creation.")
+            return
+
+        # Call the function to create the DALL-E prompt
+        # Log the data stored under DOMAIN
+        #_LOGGER.debug(f"{DOMAIN} data: {hass.data[DOMAIN]}")
+        try:
+            config_data = hass.data[DOMAIN][entry.entry_id]
+            chatgpt_out = await async_create_dalle_prompt(hass, chatgpt_in, config_data)
+
+            # Use chatgpt_out for further processing or return it
+            _LOGGER.debug(f"DALL-E Prompt: {chatgpt_out}")
+        except Exception as e:
+            _LOGGER.error(f"Error creating DALL-E prompt: {e}")
+
+    # Register the gpt prompt service
+    hass.services.async_register(DOMAIN, 'create_chatgpt_prompt', create_gpt_prompt_service)
+    
     return True

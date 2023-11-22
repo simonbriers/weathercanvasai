@@ -45,7 +45,7 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             
             # If there are no errors, proceed to create the config entry
             if not errors:
-                _LOGGER.info("API test to ChatGPT passed. Ready to create config entry.")
+                #_LOGGER.info("API test to ChatGPT passed. Ready to create config entry.")
                 # Placeholder for creating config entry
                 return self.async_create_entry(title="Weather Image Generator", data=user_input)
 
@@ -62,7 +62,7 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     messages=[{"role": "user", "content": "Say Test"}]
                 )
             completion = await self.hass.async_add_executor_job(make_api_call)
-            _LOGGER.debug('OpenAI API response: %s', completion)
+            # _LOGGER.debug('OpenAI API response: %s', completion)
             return True, None
         except Exception as e:
             _LOGGER.error('Error testing OpenAI API: %s', e)
