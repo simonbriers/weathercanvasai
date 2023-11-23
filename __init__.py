@@ -47,16 +47,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         now = datetime.datetime.now()
         season = get_season(now)
         
-        # Get formatted address from the home zone
-        formatted_address = await async_get_home_zone_address(hass)
+        # Retrieve the stored location name
+        location_name = hass.data[DOMAIN].get('location_name', 'Unknown Location')
+
         # Get weather conditions
         weather_prompt = await async_get_weather_conditions(hass)
 
         # Combine the information into chatgpt_in, to be sent to chatgpt next and receive chatgpt_out
-        chatgpt_in = f"In {formatted_address}, it is {day_segment} in {season}. {weather_prompt}"
+        chatgpt_in = f"In {location_name}, it is {day_segment} in {season}. {weather_prompt}"
 
         # Log the combined information
-        #_LOGGER.debug(chatgpt_in)
+        _LOGGER.debug(chatgpt_in)
 
         # Ensure chatgpt_in is not empty
         if not chatgpt_in:

@@ -5,7 +5,8 @@
         "user": {
           "description": "Configure your API keys and preferences for the Weather Image Generator.",
           "data": {
-            "openai_api_key": "OpenAI API Key"
+            "openai_api_key": "OpenAI API Key",
+            "googlemaps_api_key": "Google Maps API Key"
           }
         }
       },

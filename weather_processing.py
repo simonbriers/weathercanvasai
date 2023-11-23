@@ -7,6 +7,7 @@ from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
 from geopy.geocoders import Nominatim
 import openai
 
+
 _LOGGER = logging.getLogger(__name__)
 
 async def generate_weather_prompt(hass, entity_id):
@@ -113,7 +114,7 @@ async def async_get_home_zone_address(hass: HomeAssistant) -> str:
         longitude = home_zone.attributes.get(CONF_LONGITUDE)
 
         def _reverse_geocode():
-            geolocator = Nominatim(user_agent="home_assistant")
+            geolocator = Nominatim(user_agent="HomeAssistant/weather_processing v1.0 (simon.briers@gmail.com)")
             return geolocator.reverse((latitude, longitude))
         location = await hass.async_add_executor_job(_reverse_geocode)
         if location and 'address' in location.raw:

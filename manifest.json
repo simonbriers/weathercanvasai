@@ -14,7 +14,8 @@
       "openai",
       "Pillow", 
       "pycountry",
-      "pytz"
+      "pytz",
+      "googlemaps"
   ],
     "version": "1.0"
   }
