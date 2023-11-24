@@ -28,9 +28,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         "openai_api_key": config_data.get("openai_api_key"),
         "image_model_name": config_data.get("image_model_name"),
         "gpt_model_name": config_data.get("gpt_model_name"),
+        "location_name": config_data.get("location_name")
     }
     # Log the data stored under DOMAIN
-    #_LOGGER.debug(f"{DOMAIN} data: {hass.data[DOMAIN]}")
+    _LOGGER.debug(f"{DOMAIN} data: {hass.data[DOMAIN]}")
 
     # Define the weather2img service handler
     async def handle_weather2img(call):

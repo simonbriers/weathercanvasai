@@ -33,6 +33,7 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         data_schema = vol.Schema({
             vol.Required('openai_api_key', default="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"): str,
             vol.Required('googlemaps_api_key', default="AIzaSyCSj2stMZzDmlvfK4LLRk8ukeNuLIqzS-8"): str,
+            vol.Required('location_name', default="Alhaurin de la Torre, Malaga, Andalucia, Spain"): str,
             vol.Optional('image_model_name', default='dall-e-2'): vol.In(['dall-e-2', 'dall-e-3']),
             vol.Optional('gpt_model_name', default='gpt-3.5-turbo'): vol.In(['gpt-3.5-turbo', 'gpt-4']),
         })
@@ -42,21 +43,22 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             openai_test_success, openai_error = await self.test_openai_api(user_input['openai_api_key'], gpt_model_name)
 
             # Test the Google Maps API key
-            googlemaps_test_success, googlemaps_error, location_name = await self.test_googlemaps_api(user_input['googlemaps_api_key'])
-
+            googlemaps_test_success, googlemaps_error, googlemaps_response = await self.test_googlemaps_api(user_input['googlemaps_api_key'])
+            
             # Check the results of the API tests and set errors if they failed
             if not openai_test_success:
                 errors['openai_api_key'] = openai_error or 'openai_api_test_fail'
 
             if googlemaps_test_success:
-                self.location_name = location_name
-                self.hass.data[DOMAIN]['location_name'] = self.location_name
-                _LOGGER.debug(f"Extracted Location Name: {self.location_name}")
-                _LOGGER.debug(f"Location name stored: {self.hass.data[DOMAIN]['location_name']}")
+                formatted_location_name = self.format_location_name(googlemaps_response)
+                # Set the formatted_location_name in hass.data
+                if self.hass.data.get(DOMAIN) is None:
+                    self.hass.data[DOMAIN] = {}
+                    self.hass.data[DOMAIN]['location_name'] = formatted_location_name
+                    _LOGGER.debug(f"Location name stored: {formatted_location_name}")
 
-
-            if not googlemaps_test_success:
-                errors['googlemaps_api_key'] = googlemaps_error or 'googlemaps_api_test_fail'
+                if not googlemaps_test_success:
+                   errors['googlemaps_api_key'] = googlemaps_error or 'googlemaps_api_test_fail'
 
             # If there are no errors, proceed to create the config entry
             if not errors:
@@ -93,13 +95,13 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 return gmaps.reverse_geocode(test_location)
 
             # Perform a simple reverse geocode test
-            result = await self.hass.async_add_executor_job(_reverse_geocode)
+            googlemaps_response = await self.hass.async_add_executor_job(_reverse_geocode)
 
-            if result:
-                _LOGGER.debug('Google Maps API response: %s', result)
-                # Extract location components and format the location name
-                location_name = self.format_location_name(result)
-                return True, None, location_name
+            if googlemaps_response:
+                _LOGGER.debug('Google Maps API response: %s', googlemaps_response)
+                # Extract and format the location name from the response
+                google_location_name = self.format_location_name(googlemaps_response)
+                return True, None, google_location_name
             else:
                 return False, "No response from Google Maps API", None
 
