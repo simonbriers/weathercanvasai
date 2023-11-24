@@ -13,6 +13,12 @@ from homeassistant.const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+# Define the update_listener function
+async def update_listener(hass: HomeAssistant, entry: ConfigEntry):
+    """Handle options update."""
+    _LOGGER.info("Configuration options updated. Reloading integration.")
+    await hass.config_entries.async_reload(entry.entry_id)
+
 async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the weather_image_generator component."""
     # Placeholder for your component setup logic, if needed
@@ -23,12 +29,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     hass.data.setdefault(DOMAIN, {})
     config_data = entry.data
 
+    # Check if a temporary location name was stored during the config flow
+    if 'temporary_location_name' in hass.data[DOMAIN]:
+        # Use the temporary location name if available
+        location_name = hass.data[DOMAIN].pop('temporary_location_name')
+    else:
+        # Otherwise, use the location name from the config entry, or a default value
+        location_name = config_data.get("location_name", "Unknown Location")
+
     # Store the configuration data in hass.data for later use
     hass.data[DOMAIN][entry.entry_id] = {
         "openai_api_key": config_data.get("openai_api_key"),
         "image_model_name": config_data.get("image_model_name"),
         "gpt_model_name": config_data.get("gpt_model_name"),
-        "location_name": config_data.get("location_name")
+        "location_name": location_name
     }
     # Log the data stored under DOMAIN
     _LOGGER.debug(f"{DOMAIN} data: {hass.data[DOMAIN]}")
@@ -49,7 +63,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         season = get_season(now)
         
         # Retrieve the stored location name
-        location_name = hass.data[DOMAIN].get('location_name', 'Unknown Location')
+        location_name = hass.data[DOMAIN][entry.entry_id].get('location_name', 'Unknown Location')
 
         # Get weather conditions
         weather_prompt = await async_get_weather_conditions(hass)

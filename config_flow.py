@@ -10,11 +10,11 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-# Test logging messages at various levels
 
 class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
-    
+
+  
     def __init__(self):
         """Initialize the config flow."""
         self.latitude = None
@@ -40,25 +40,29 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             gpt_model_name = user_input.get('gpt_model_name', 'gpt-3.5-turbo')  # Get the GPT model name or default
+
+            # Test the OpenAI API key
             openai_test_success, openai_error = await self.test_openai_api(user_input['openai_api_key'], gpt_model_name)
 
-            # Test the Google Maps API key
-            googlemaps_test_success, googlemaps_error, googlemaps_response = await self.test_googlemaps_api(user_input['googlemaps_api_key'])
-            
-            # Check the results of the API tests and set errors if they failed
             if not openai_test_success:
                 errors['openai_api_key'] = openai_error or 'openai_api_test_fail'
 
-            if googlemaps_test_success:
-                formatted_location_name = self.format_location_name(googlemaps_response)
-                # Set the formatted_location_name in hass.data
-                if self.hass.data.get(DOMAIN) is None:
-                    self.hass.data[DOMAIN] = {}
-                    self.hass.data[DOMAIN]['location_name'] = formatted_location_name
-                    _LOGGER.debug(f"Location name stored: {formatted_location_name}")
+            # Test the Google Maps API key
+            googlemaps_test_success, googlemaps_error, google_location_name = await self.test_googlemaps_api(user_input['googlemaps_api_key'])
 
-                if not googlemaps_test_success:
-                   errors['googlemaps_api_key'] = googlemaps_error or 'googlemaps_api_test_fail'
+            # Decide on the location name based on the success of the Google Maps API test
+            if googlemaps_test_success:
+                location_name = google_location_name
+            else:
+                _LOGGER.debug(f"Error testing Google Maps API: {googlemaps_error}")
+                location_name = user_input.get('location_name', 'Unknown Location')
+
+            # Store the location name in hass.data directly
+            if self.hass.data.get(DOMAIN) is None:
+                self.hass.data[DOMAIN] = {}
+            self.hass.data[DOMAIN]['temporary_location_name'] = location_name
+            _LOGGER.debug(f"Temporary location name stored: {location_name}")
+
 
             # If there are no errors, proceed to create the config entry
             if not errors:
@@ -78,7 +82,7 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     messages=[{"role": "user", "content": "Say Test"}]
                 )
             completion = await self.hass.async_add_executor_job(make_api_call)
-            _LOGGER.debug('OpenAI API response: %s', completion)
+            #_LOGGER.debug('OpenAI API response: %s', completion)
             return True, None
         except Exception as e:
             _LOGGER.error('Error testing OpenAI API: %s', e)
@@ -98,10 +102,9 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             googlemaps_response = await self.hass.async_add_executor_job(_reverse_geocode)
 
             if googlemaps_response:
-                _LOGGER.debug('Google Maps API response: %s', googlemaps_response)
-                # Extract and format the location name from the response
-                google_location_name = self.format_location_name(googlemaps_response)
-                return True, None, google_location_name
+                #_LOGGER.debug('Google Maps API test returned a response: %s', googlemaps_response)
+                formatted_location_name = self.format_location_name(googlemaps_response)
+                return True, None, formatted_location_name
             else:
                 return False, "No response from Google Maps API", None
 
@@ -112,6 +115,7 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     def format_location_name(self, geocode_result):
         # Initialize variables
         locality = province = region = country = None
+        #_LOGGER.debug(f"Content of geocode_result passed to the formatter: {geocode_result}")
 
         # Iterate through address components to find required information
         for component in geocode_result[0]['address_components']:
@@ -128,4 +132,3 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         parts = [locality, province, region, country]
         location_name = ', '.join(filter(None, parts))
         return location_name
-
