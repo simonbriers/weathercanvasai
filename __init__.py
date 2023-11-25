@@ -2,6 +2,7 @@ import logging
 import datetime
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 from .const import DOMAIN
 from .weather_processing import async_calculate_day_segment, get_season, async_get_home_zone_address, async_get_weather_conditions, async_create_dalle_prompt
 from homeassistant.const import (
@@ -11,7 +12,12 @@ from homeassistant.const import (
     CONF_NAME,
 )
 
+from .sensor import Weather2ImgPromptsSensor
+
 _LOGGER = logging.getLogger(__name__)
+
+# Define the platforms that this integration supports
+PLATFORMS = ["sensor"]
 
 # Define the update_listener function
 async def update_listener(hass: HomeAssistant, entry: ConfigEntry):
@@ -23,14 +29,6 @@ async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the weather_image_generator component."""
     # Placeholder for your component setup logic, if needed
     return True
-
-async def async_setup_entry(hass, entry):
-    """Set up weather2img_prompts from a config entry."""
-    # Rest of your setup logic
-
-    sensor = Weather2ImgPromptsSensor(hass, entry.entry_id, "Weather2Img Prompts")
-    hass.async_add_job(hass.config_entries.async_add_entities, [sensor])
-
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up weather_image_generator from a config entry."""
@@ -93,13 +91,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         try:
             config_data = hass.data[DOMAIN][entry.entry_id]
             chatgpt_out = await async_create_dalle_prompt(hass, chatgpt_in, config_data)
-
             # Use chatgpt_out for further processing or return it
             _LOGGER.debug(f"DALL-E Prompt: {chatgpt_out}")
+            # Dispatch the update to the sensor with new data
+            async_dispatcher_send(hass, "update_weather_image_generator_sensor", {
+                "chatgpt_in": chatgpt_in,
+                "chatgpt_out": chatgpt_out,
+            })
         except Exception as e:
             _LOGGER.error(f"Error creating DALL-E prompt: {e}")
 
     # Register the gpt prompt service
     hass.services.async_register(DOMAIN, 'create_chatgpt_prompt', create_gpt_prompt_service)
     
+    # Forward the setup to the sensor platform
+    for platform in PLATFORMS:
+        hass.async_create_task(
+            hass.config_entries.async_forward_entry_setup(entry, platform)
+        )
+
     return True
