@@ -17,7 +17,7 @@ from .sensor import Weather2ImgPromptsSensor
 _LOGGER = logging.getLogger(__name__)
 
 # Define the platforms that this integration supports
-PLATFORMS = ["sensor"]
+PLATFORMS = ["sensor","camera"]
 
 # Define the update_listener function
 async def update_listener(hass: HomeAssistant, entry: ConfigEntry):
@@ -55,8 +55,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     # Define the weather2img service handler
     async def handle_weather2img(call):
-        # Retrieve configuration data
-        service_data = hass.data[DOMAIN][entry.entry_id]
+        # Dummy URL for testing
+        dummy_url = "https://via.placeholder.com/300.png?text=Dalle+Test"
+
+        # Dispatch the update to the camera with the dummy URL
+        async_dispatcher_send(hass, "update_dalle_weather_image_camera", dummy_url)
 
     # Register the weather2img service
     hass.services.async_register(DOMAIN, 'weather2img', handle_weather2img)

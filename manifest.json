@@ -18,7 +18,8 @@
       "pycountry",
       "pytz",
       "googlemaps",
-      "openai==0.28"
+      "openai==0.28",
+      "aiohttp"
   ],
     "version": "1.0"
   }
