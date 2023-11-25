@@ -7,8 +7,8 @@
     "iot_class": "cloud_polling",
     "issue_tracker": "https://github.com/simonbriers/dalle3_weatherimages/issues",
     "quality_scale": "internal",
-    "icon": "mdi:sun",
-    "logo": "mdi:moon",
+    "icon": "mdi:chat",
+    "logo": "mdi:chat",
     "requirements": [
       "requests",
       "python-dotenv",

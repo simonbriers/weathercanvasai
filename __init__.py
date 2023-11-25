@@ -24,6 +24,14 @@ async def async_setup(hass: HomeAssistant, config: dict):
     # Placeholder for your component setup logic, if needed
     return True
 
+async def async_setup_entry(hass, entry):
+    """Set up weather2img_prompts from a config entry."""
+    # Rest of your setup logic
+
+    sensor = Weather2ImgPromptsSensor(hass, entry.entry_id, "Weather2Img Prompts")
+    hass.async_add_job(hass.config_entries.async_add_entities, [sensor])
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up weather_image_generator from a config entry."""
     hass.data.setdefault(DOMAIN, {})
