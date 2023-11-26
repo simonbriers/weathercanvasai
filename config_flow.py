@@ -7,6 +7,7 @@ from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 from .const import DOMAIN
+import json
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -22,12 +23,15 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_user(self, user_input=None):
         """Handle a config flow initiated by the user."""
+        _LOGGER.debug("Entering async_step_user with user_input: %s", user_input)
+
+        # Initialize the errors dictionary
+        errors = {}
+           
         # Retrieve the latitude and longitude from Home Assistant's core configuration
         if self.hass:
             self.latitude = self.hass.config.latitude
             self.longitude = self.hass.config.longitude
-
-        errors = {}
 
         # Define your data schema for the form with default values
         data_schema = vol.Schema({
@@ -37,8 +41,21 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             vol.Optional('image_model_name', default='dall-e-2'): vol.In(['dall-e-2', 'dall-e-3']),
             vol.Optional('gpt_model_name', default='gpt-3.5-turbo'): vol.In(['gpt-3.5-turbo', 'gpt-4']),
         })
+        _LOGGER.debug("Form schema defined")
 
+        # Check the number of current entries and abort if any exists
+        current_entries = self._async_current_entries()
+        _LOGGER.debug(f"Current entries: {current_entries}")
+        if len(current_entries) > 0:
+            _LOGGER.debug("An instance of this integration is already configured. Only one instance is allowed.")
+            errors["base"] = "single_instance_allowed"
+            return self.async_show_form(
+                step_id="user", data_schema=data_schema, errors=errors
+            )
+  
         if user_input is not None:
+            _LOGGER.debug("Processing user input")
+
             gpt_model_name = user_input.get('gpt_model_name', 'gpt-3.5-turbo')  # Get the GPT model name or default
 
             # Test the OpenAI API key
@@ -66,7 +83,7 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             # If there are no errors, proceed to create the config entry
             if not errors:
-                #_LOGGER.info("API tests passed. Ready to create config entry.")
+                _LOGGER.debug(f"Creating config entry with user input: {user_input}")
                 return self.async_create_entry(title="Weather Image Generator", data=user_input)
 
         # Show the form again with any errors

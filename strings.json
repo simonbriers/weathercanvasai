@@ -1,0 +1,14 @@
+{
+    "config": {
+      "error": {
+        "single_instance_allowed": "An instance of this integration is already configured. Only one instance is allowed."
+      },
+      "step": {
+        "user": {
+          "title": "Weather Image Generator",
+          "description": "Configure your API keys and preferences for the Weather Image Generator."
+        }
+      }
+    }
+  }
+  

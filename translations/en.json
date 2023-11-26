@@ -12,7 +12,8 @@
       },
       "error": {
         "cannot_connect": "Cannot connect to the API.",
-        "invalid_auth": "Invalid authentication credentials."
+        "invalid_auth": "Invalid authentication credentials.",
+        "single_instance_allowed": "An instance of this integration is already configured. Only one instance is allowed."
       },
       "abort": {
         "already_configured": "Device is already configured."

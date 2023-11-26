@@ -18,6 +18,9 @@ class DalleWeatherImageCamera(Camera):
         self._attr_unique_id = entry_id  # Use entry_id as the unique ID
         self._state = "Initial State"  # Default state
         self._attr_icon = 'mdi:camera'  # Set the icon here
+        self._attributes = {
+            "last_image_update": datetime.now().isoformat()
+        }
 
         # Additional initialization code...
 
@@ -28,10 +31,12 @@ class DalleWeatherImageCamera(Camera):
 
     async def async_camera_image(self):
         """Return the image of this camera in bytes."""
+        _LOGGER.debug("Fetching camera image.")
         if self._image_url:
             # Use Home Assistant's aiohttp_client session for HTTP requests
             session = async_get_clientsession(self.hass)
             return await self._fetch_image_from_url(session, self._image_url)
+        _LOGGER.warning("No image URL set for camera; returning None.")
         return None
 
     async def _fetch_image_from_url(self, session, url):
@@ -59,10 +64,14 @@ class DalleWeatherImageCamera(Camera):
 
     async def _update_image_url(self, image_url):
         """Update the camera's image URL."""
+        _LOGGER.debug(f"Received signal to update image URL: {image_url}")
         self._image_url = image_url
         # Assuming you want to store the last update timestamp as an attribute
-        self._attributes["last_image_update"] = datetime.now().isoformat()
+        self._attributes = {
+        "last_image_update": datetime.now().isoformat()
+        }
         self.async_schedule_update_ha_state()
+        _LOGGER.info("Camera image URL updated and state scheduled to be updated.")
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):

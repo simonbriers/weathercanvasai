@@ -6,6 +6,11 @@ import pytz
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
 from geopy.geocoders import Nominatim
 import openai
+import aiohttp
+import os
+from .const import DOMAIN
+import json
+
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -106,27 +111,6 @@ async def async_calculate_day_segment(hass: HomeAssistant) -> str:
 
     return "Unknown time"
 
-async def async_get_home_zone_address(hass: HomeAssistant) -> str:
-    # Return a formatted address string for the home zone.
-    home_zone = hass.states.get('zone.home')
-    if home_zone:
-        latitude = home_zone.attributes.get(CONF_LATITUDE)
-        longitude = home_zone.attributes.get(CONF_LONGITUDE)
-
-        def _reverse_geocode():
-            geolocator = Nominatim(user_agent="HomeAssistant/weather_processing v1.0 (simon.briers@gmail.com)")
-            return geolocator.reverse((latitude, longitude))
-        location = await hass.async_add_executor_job(_reverse_geocode)
-        if location and 'address' in location.raw:
-            address = location.raw['address']
-            town = address.get('town', address.get('city'))
-            state = address.get('state')
-            country = address.get('country')
-
-            formatted_address = f"{town} in {state} {country}" if all([town, state, country]) else "Unknown Location"
-            return formatted_address
-    return "Unknown Location"
-
 async def async_get_weather_conditions(hass: HomeAssistant) -> str:
     # Get the state of the weather entity
     weather_data = hass.states.get('weather.forecast_home')
@@ -203,3 +187,44 @@ async def async_create_dalle_prompt(hass: HomeAssistant, chatgpt_in: str, config
         return f"Error: {str(e)}"
 
     return "Error: No response from ChatGPT."
+
+async def generate_dalle_image(hass, prompt):
+    """Generate an image using DALL-E and return the accessible URL."""
+    # Retrieve the OpenAI API key and DALL-E model name from the configuration
+    config_data = hass.data[DOMAIN]
+    openai_api_key = config_data['openai_api_key']
+    image_model_name = config_data['image_model_name']
+
+    # Endpoint
+    openai_url = "https://api.openai.com/v1/images/generations"
+    # Headers
+    headers = {
+        "Authorization": f"Bearer {openai_api_key}",
+        "Content-Type": "application/json"
+    }
+    # Payload
+    payload = {
+        "prompt": prompt,
+        "n": 1,  # Number of images to generate
+        # Add other necessary parameters according to the API documentation
+    }
+    
+    # Make the POST request to OpenAI API
+    async with aiohttp.ClientSession() as session:
+        async with session.post(openai_url, json=payload, headers=headers) as response:
+            if response.status == 200:
+                result = await response.json()
+                image_id = result['data'][0]['id']
+                # Assuming OpenAI API returns a URL to access the image
+                image_url = f"https://api.openai.com/v1/images/{image_id}/download"
+                
+                # Log the image URL
+                _LOGGER.debug(f"Generated image URL: {image_url}")
+                
+                # Here you would handle downloading the image and making it accessible
+                # via a local URL if needed.
+                
+                return image_url
+            else:
+                _LOGGER.error("Failed to generate image with DALL-E: %s", response.status)
+                return None
