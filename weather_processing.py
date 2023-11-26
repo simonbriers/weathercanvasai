@@ -190,6 +190,7 @@ async def async_create_dalle_prompt(hass: HomeAssistant, chatgpt_in: str, config
 
 async def generate_dalle_image(hass, prompt):
     """Generate an image using DALL-E and return the accessible URL."""
+    
     # Retrieve the OpenAI API key and DALL-E model name from the configuration
     config_data = hass.data[DOMAIN]
     openai_api_key = config_data['openai_api_key']
@@ -197,34 +198,47 @@ async def generate_dalle_image(hass, prompt):
 
     # Endpoint
     openai_url = "https://api.openai.com/v1/images/generations"
+    
     # Headers
     headers = {
         "Authorization": f"Bearer {openai_api_key}",
         "Content-Type": "application/json"
     }
+    
     # Payload
     payload = {
         "prompt": prompt,
-        "n": 1,  # Number of images to generate
-        # Add other necessary parameters according to the API documentation
+        "n": 1,
+        "model": image_model_name,
+        "size": "1024x1024"
     }
-    
+
+    _LOGGER.debug("Payload for DALL-E API: %s", payload)
+
     # Make the POST request to OpenAI API
     async with aiohttp.ClientSession() as session:
-        async with session.post(openai_url, json=payload, headers=headers) as response:
-            if response.status == 200:
-                result = await response.json()
-                image_id = result['data'][0]['id']
-                # Assuming OpenAI API returns a URL to access the image
-                image_url = f"https://api.openai.com/v1/images/{image_id}/download"
-                
-                # Log the image URL
-                _LOGGER.debug(f"Generated image URL: {image_url}")
-                
-                # Here you would handle downloading the image and making it accessible
-                # via a local URL if needed.
-                
-                return image_url
-            else:
-                _LOGGER.error("Failed to generate image with DALL-E: %s", response.status)
+        try:
+            async with session.post(openai_url, json=payload, headers=headers) as response:
+                _LOGGER.debug("Received response status: %s", response.status)
+                response_text = await response.text()
+                _LOGGER.debug("Received response text: %s", response_text)
+                if response.status == 200:
+                    result = await response.json()
+                    # Check if 'data' is present in the response and it is not empty
+                    if 'data' in result and result['data']:
+                        # Extract the image URL directly from the data array
+                        image_url = result['data'][0].get('url')
+                        if image_url:
+                            return image_url
+                        else:
+                            _LOGGER.error("No 'url' key in the response data.")
+                            return None
+                    else:
+                        _LOGGER.error("The 'data' key is missing or empty in the response.")
+                        return None
+                else:
+                    _LOGGER.error("Failed to generate image with DALL-E: %s", response.status)
                 return None
+        except Exception as e:
+            _LOGGER.error("Exception occurred while generating image with DALL-E: %s", str(e))
+            return None

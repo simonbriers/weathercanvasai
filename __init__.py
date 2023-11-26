@@ -69,8 +69,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             hass.config_entries.async_forward_entry_setup(entry, platform)
         )
 
-    # Define the weather2img service handler
-    async def handle_weather2img(call):
+    # Define the load_testimage service handler
+    async def handle_load_test_image(call):
         # Dummy URL for testing
         dummy_url = "https://via.placeholder.com/300.png?text=Dalle+Test"
 
@@ -78,7 +78,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         async_dispatcher_send(hass, "update_dalle_weather_image_camera", dummy_url)
 
     # Register the weather2img service
-    hass.services.async_register(DOMAIN, 'weather2img', handle_weather2img)
+    hass.services.async_register(DOMAIN, 'load_testimage', handle_load_test_image)
 
     # Define the create gpt prompt service handler
     async def create_gpt_prompt_service(call):
@@ -122,8 +122,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # Register the gpt prompt service
     hass.services.async_register(DOMAIN, 'create_chatgpt_prompt', create_gpt_prompt_service)
 
-    # Define the "test dalle image" service handler
-    async def test_dalle_image_service(call):
+    # Define the "create dalle image" service handler
+    async def create_dalle_image_service(call):
         # Define the entity ID of the Weather2ImgPromptsSensor
         entity_id = "sensor.weather2img_prompts"
 
@@ -143,13 +143,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
         try:
             image_url = await generate_dalle_image(hass, prompt)
-            _LOGGER.info(f"DALL-E image generated: {image_url}")
-            # Here you can do something with the image URL, like updating an entity state or sending a notification
+            if image_url:
+                _LOGGER.info(f"DALL-E image generated: {image_url}")
+                # Dispatch the update to the camera with the real image URL
+                async_dispatcher_send(hass, "update_dalle_weather_image_camera", image_url)
+            else:
+                _LOGGER.error("Failed to generate DALL-E image or invalid URL received")
         except Exception as e:
             _LOGGER.error(f"Error generating DALL-E image: {e}")
-        
-    # Register the "test dalle image" service
-    hass.services.async_register(DOMAIN, 'test_dalle_image', test_dalle_image_service)
+            
+    # Register the "create dalle image" service
+    hass.services.async_register(DOMAIN, 'create_dalle_image', create_dalle_image_service)
 
 
     # At the end of the setup process, after successfully setting up
