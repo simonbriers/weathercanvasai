@@ -18,11 +18,16 @@ from homeassistant.const import (
 )
 from .sensor import Weather2ImgPromptsSensor
 from .weather_processing import generate_dalle_image
+from .config_flow import WeatherImageGeneratorOptionsFlowHandler
 
 
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = ["sensor", "camera"] # Define the platforms that this integration supports
+
+# link the options flow handler to the config entry
+async def async_get_options_flow(config_entry):
+    return WeatherImageGeneratorOptionsFlowHandler(config_entry)
 
 # Define the update_listener function
 async def update_listener(hass: HomeAssistant, entry: ConfigEntry):

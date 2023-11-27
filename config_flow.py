@@ -23,7 +23,7 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_user(self, user_input=None):
         """Handle a config flow initiated by the user."""
-        _LOGGER.debug("Entering async_step_user with user_input: %s", user_input)
+        #_LOGGER.debug("Entering async_step_user with user_input: %s", user_input)
 
         # Initialize the errors dictionary
         errors = {}
@@ -41,21 +41,18 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             vol.Optional('image_model_name', default='dall-e-2'): vol.In(['dall-e-2', 'dall-e-3']),
             vol.Optional('gpt_model_name', default='gpt-3.5-turbo'): vol.In(['gpt-3.5-turbo', 'gpt-4']),
         })
-        _LOGGER.debug("Form schema defined")
-
+        
         # Check the number of current entries and abort if any exists
         current_entries = self._async_current_entries()
         _LOGGER.debug(f"Current entries: {current_entries}")
         if len(current_entries) > 0:
-            _LOGGER.debug("An instance of this integration is already configured. Only one instance is allowed.")
             errors["base"] = "single_instance_allowed"
             return self.async_show_form(
                 step_id="user", data_schema=data_schema, errors=errors
             )
   
         if user_input is not None:
-            _LOGGER.debug("Processing user input")
-
+            
             gpt_model_name = user_input.get('gpt_model_name', 'gpt-3.5-turbo')  # Get the GPT model name or default
 
             # Test the OpenAI API key
@@ -78,12 +75,10 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             if self.hass.data.get(DOMAIN) is None:
                 self.hass.data[DOMAIN] = {}
             self.hass.data[DOMAIN]['temporary_location_name'] = location_name
-            _LOGGER.debug(f"Temporary location name stored: {location_name}")
-
-
+            
             # If there are no errors, proceed to create the config entry
             if not errors:
-                _LOGGER.debug(f"Creating config entry with user input: {user_input}")
+            #   _LOGGER.debug(f"Creating config entry with user input: {user_input}")
                 return self.async_create_entry(title="Weather Image Generator", data=user_input)
 
         # Show the form again with any errors
@@ -119,7 +114,6 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             googlemaps_response = await self.hass.async_add_executor_job(_reverse_geocode)
 
             if googlemaps_response:
-                #_LOGGER.debug('Google Maps API test returned a response: %s', googlemaps_response)
                 formatted_location_name = self.format_location_name(googlemaps_response)
                 return True, None, formatted_location_name
             else:
@@ -132,8 +126,6 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     def format_location_name(self, geocode_result):
         # Initialize variables
         locality = province = region = country = None
-        #_LOGGER.debug(f"Content of geocode_result passed to the formatter: {geocode_result}")
-
         # Iterate through address components to find required information
         for component in geocode_result[0]['address_components']:
             if 'locality' in component['types']:
@@ -149,3 +141,23 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         parts = [locality, province, region, country]
         location_name = ', '.join(filter(None, parts))
         return location_name
+
+class WeatherImageGeneratorOptionsFlowHandler(config_entries.OptionsFlow):
+    def __init__(self, config_entry):
+        self.config_entry = config_entry
+
+    async def async_step_init(self, user_input=None):
+        """Manage the options."""
+        if user_input is not None:
+            return self.async_create_entry(title="", data=user_input)
+
+        options = {
+            vol.Optional('gpt_model_name', 
+                         default=self.config_entry.options.get('gpt_model_name', 'gpt-3.5-turbo')): 
+                         vol.In(['gpt-3.5-turbo', 'gpt-4']),
+            vol.Optional('image_model_name', 
+                         default=self.config_entry.options.get('image_model_name', 'dall-e-2')): 
+                         vol.In(['dall-e-2', 'dall-e-3'])
+        }
+
+        return self.async_show_form(step_id="init", data_schema=vol.Schema(options))
