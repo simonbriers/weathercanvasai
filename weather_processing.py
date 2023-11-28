@@ -229,7 +229,20 @@ async def generate_dalle_image(hass, prompt):
                         # Extract the image URL directly from the data array
                         image_url = result['data'][0].get('url')
                         if image_url:
-                            return image_url
+                            async with session.get(image_url) as image_response:
+                                if image_response.status == 200:
+                                    image_data = await image_response.read()
+                                    try:
+                                        with open('/config/www/dalle.png', 'wb') as file:
+                                            file.write(image_data)
+                                        _LOGGER.debug("Image saved as dalle.png in the directory: %s", os.getcwd())
+                                        return image_url  # Return the image URL if saved successfully
+                                    except Exception as e:
+                                        _LOGGER.error("Error saving the image: %s", str(e))
+                                        return None  # Return None if there's an error saving the image
+                                else:
+                                    _LOGGER.error("Failed to download image: %s", image_response.status)
+                                    return None  # Return None if the image download failed
                         else:
                             _LOGGER.error("No 'url' key in the response data.")
                             return None
@@ -238,7 +251,7 @@ async def generate_dalle_image(hass, prompt):
                         return None
                 else:
                     _LOGGER.error("Failed to generate image with DALL-E: %s", response.status)
-                return None
+                    return None
         except Exception as e:
             _LOGGER.error("Exception occurred while generating image with DALL-E: %s", str(e))
             return None
