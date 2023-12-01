@@ -3,23 +3,16 @@
     "name": "Weather Image Generator",
     "codeowners": ["@simonbriers"],
     "config_flow": true,
-    "documentation": "https://github.com/simonbriers/dalle3_weatherimages",
+    "documentation": "https://github.com/simonbriers/weather_image_generator/blob/openai-0.28/README.md",
     "iot_class": "cloud_polling",
-    "issue_tracker": "https://github.com/simonbriers/dalle3_weatherimages/issues",
+    "issue_tracker": "https://github.com/simonbriers/weather_image_generator/issues",
     "quality_scale": "internal",
     "icon": "mdi:chat",
     "logo": "mdi:chat",
     "requirements": [
       "requests",
-      "python-dotenv",
-      "PyYAML", 
-      "openai",
       "Pillow", 
-      "pycountry",
-      "pytz",
-      "googlemaps",
-      "openai==0.28",
-      "aiohttp"
+      "googlemaps"
   ],
     "version": "1.0"
   }
