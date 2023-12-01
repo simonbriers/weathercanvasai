@@ -31,7 +31,7 @@ class DalleWeatherImageCamera(Camera):
         """Return the name of this camera."""
         return self._name
 
-    async def async_camera_image(self):
+    async def async_camera_image(self, width=None, height=None):
         """Return the image of this camera in bytes."""
         _LOGGER.debug("Fetching camera image.")
         if self._image_url:

@@ -1,3 +1,7 @@
 AIzaSyCSj2stMZzDmlvfK4LLRk8ukeNuLIqzS-8
 
 google maps platform api
+
+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
+
+openai
