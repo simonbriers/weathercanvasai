@@ -35,9 +35,9 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         # Define your data schema for the form with default values
         data_schema = vol.Schema({
-            vol.Required('openai_api_key', default="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"): str,
-            vol.Required('googlemaps_api_key', default="AIzaSyCSj2stMZzDmlvfK4LLRk8ukeNuLIqzS-8"): str,
-            vol.Required('location_name', default="Alhaurin de la Torre, Malaga, Andalucia, Spain"): str,
+            vol.Required('openai_api_key', default="your openai api key here"): str,
+            vol.Required('googlemaps_api_key', default="your googlemaps api key here"): str,
+            vol.Required('location_name', default="Malaga, Andalucia, Spain"): str,
             vol.Optional('image_model_name', default='dall-e-2'): vol.In(['dall-e-2', 'dall-e-3']),
             vol.Optional('gpt_model_name', default='gpt-3.5-turbo'): vol.In(['gpt-3.5-turbo', 'gpt-4']),
         })
