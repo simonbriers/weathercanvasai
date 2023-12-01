@@ -1,10 +1,12 @@
 # weather_image_generator
-Home Assistant weather imagee gerator with OpenAI
+Home Assistant weather image generator with OpenAI
 
 # Custom Home Assistant Integration for DALL-E Image Generation
 
 ## Description
 This custom integration for Home Assistant generates images using DALL-E, driven by prompts constructed from location and weather data. It combines data from Home Assistant, OpenWeatherMap, and the OpenAI API to create unique, contextually relevant images.
+Since the openai libary for python is the outdated 0.27.2, this integration makes direct calls to the latest opanai api endpoints, avaoiding the installed python libaries.
+Be aware that there is a small cost involved fo the api calls to ChatGPT and to Dall-e. ou need an Opanai account and an active payment method to be able to use the api. The calls are made by services, and you can choose the model you want during setup. The tokens sent to ChatGPT are limited, the cost is negligable. To fetch a Dalle-3 image, that cost us at the moment € 0.04, for Dale-2 € 0.02. The difference in quality is huge however. Api calls are only made by services, up to you if you do this manually or in an automations once every hour. Every hour during night and day would be 24 calls and cost € 1 Be aware, that's € 30 per month ! 1 picture per day comes down to € 1.25 per month.
 
 ## Features
 - **Dynamic Image Generation**: Utilizes DALL-E to generate images based on ChatGPT prompts.
