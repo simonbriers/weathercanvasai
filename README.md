@@ -90,6 +90,4 @@ The integration offers three services:
 ## Contributing
 - Contributions to enhance or fix issues in this integration are welcome.
 
-## License
-- Include details about the license here.
 
