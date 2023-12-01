@@ -19,7 +19,7 @@ Be aware that there is a small cost involved fo the api calls to ChatGPT and to 
 - **API Keys Required**:
   - **OpenAI API Key**: For accessing DALL-E services (requires a subscription plan).
   - **OpenWeatherMap API Key**: Free key for weather data, obtained after registration.
-  - **Google Maps API Key**: For location services.
+  - **Google Maps API Key**: For location services. (Reverse geocaching to retrieve our adress from your HA coordinates)
 
 ## Installation
 1. **Download and Install the Integration**:
