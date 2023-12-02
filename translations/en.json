@@ -1,6 +1,6 @@
 {
     "config": {
-      "title": "Weather Image Generator",
+      "title": "Weather Canvas AI",
       "step": {
         "user": {
           "description": "Configure your API keys and preferences for the Weather Image Generator.",

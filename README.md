@@ -1,4 +1,4 @@
-# weather_image_generator
+# HAWeatherCanvasAI
 Home Assistant weather image generator with OpenAI
 
 # Custom Home Assistant Integration for DALL-E Image Generation

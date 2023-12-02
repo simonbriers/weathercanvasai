@@ -37,11 +37,11 @@ async def update_listener(hass: HomeAssistant, entry: ConfigEntry):
 
 
 async def async_setup(hass: HomeAssistant, config: dict):
-    """Set up the weather_image_generator component."""
+    """Set up the HAWeatherCanvasAI component."""
     return True
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
-    """Set up weather_image_generator from a config entry."""
+    """Set up HAWeatherCanvasAI from a config entry."""
     _LOGGER.debug("Entering async_step_setup_entry")
     
     # Check if the integration is already fully set up
@@ -117,7 +117,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             # Use chatgpt_out for further processing or return it
             _LOGGER.debug(f"DALL-E Prompt: {chatgpt_out}")
             # Dispatch the update to the sensor with new data
-            async_dispatcher_send(hass, "update_weather_image_generator_sensor", {
+            async_dispatcher_send(hass, "update_HAWeatherCanvasAI_sensor", {
                 "chatgpt_in": chatgpt_in,
                 "chatgpt_out": chatgpt_out,
             })

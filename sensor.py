@@ -38,7 +38,7 @@ class Weather2ImgPromptsSensor(SensorEntity):
         """Register callbacks when entity is added."""
         async_dispatcher_connect(
             self.hass, 
-            "update_weather_image_generator_sensor", 
+            "update_HAWeatherCanvasAI_sensor", 
             self._update_sensor
         )
 
