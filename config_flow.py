@@ -22,68 +22,89 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self.longitude = None
 
     async def async_step_user(self, user_input=None):
-        """Handle a config flow initiated by the user."""
-        #_LOGGER.debug("Entering async_step_user with user_input: %s", user_input)
-
-        # Initialize the errors dictionary
+        """Handle the initial user input configuration step."""
         errors = {}
-           
-        # Retrieve the latitude and longitude from Home Assistant's core configuration
-        if self.hass:
-            self.latitude = self.hass.config.latitude
-            self.longitude = self.hass.config.longitude
 
-        # Define your data schema for the form with default values
-        data_schema = vol.Schema({
-            vol.Required('openai_api_key', default="your openai api key here"): str,
-            vol.Required('googlemaps_api_key', default="your googlemaps api key here"): str,
-            vol.Required('location_name', default="Malaga, Andalucia, Spain"): str,
-            vol.Optional('image_model_name', default='dall-e-2'): vol.In(['dall-e-2', 'dall-e-3']),
-            vol.Optional('gpt_model_name', default='gpt-3.5-turbo'): vol.In(['gpt-3.5-turbo', 'gpt-4']),
-        })
-        
         # Check the number of current entries and abort if any exists
         current_entries = self._async_current_entries()
         _LOGGER.debug(f"Current entries: {current_entries}")
         if len(current_entries) > 0:
             errors["base"] = "single_instance_allowed"
-            return self.async_show_form(
-                step_id="user", data_schema=data_schema, errors=errors
-            )
-  
+            return self.async_show_form(step_id="user", errors=errors)
+
         if user_input is not None:
-            
-            gpt_model_name = user_input.get('gpt_model_name', 'gpt-3.5-turbo')  # Get the GPT model name or default
-
             # Test the OpenAI API key
-            openai_test_success, openai_error = await self.test_openai_api(user_input['openai_api_key'], gpt_model_name)
-
+            openai_test_success, openai_error = await self.test_openai_api(user_input['openai_api_key'], user_input['gpt_model_name'])
             if not openai_test_success:
                 errors['openai_api_key'] = openai_error or 'openai_api_test_fail'
 
-            # Test the Google Maps API key
+            # Test the Google Maps API key and retrieve location name
+            # Retrieve the latitude and longitude from Home Assistant's core configuration
+            self.latitude = self.hass.config.latitude
+            self.longitude = self.hass.config.longitude
+
             googlemaps_test_success, googlemaps_error, google_location_name = await self.test_googlemaps_api(user_input['googlemaps_api_key'])
+            if not googlemaps_test_success:
+                errors['googlemaps_api_key'] = googlemaps_error or 'googlemaps_api_test_fail'
 
-            # Decide on the location name based on the success of the Google Maps API test
-            if googlemaps_test_success:
-                location_name = google_location_name
-            else:
-                _LOGGER.debug(f"Error testing Google Maps API: {googlemaps_error}")
-                location_name = user_input.get('location_name', 'Unknown Location')
-
-            # Store the location name in hass.data directly
-            if self.hass.data.get(DOMAIN) is None:
-                self.hass.data[DOMAIN] = {}
-            self.hass.data[DOMAIN]['temporary_location_name'] = location_name
-            
-            # If there are no errors, proceed to create the config entry
             if not errors:
-            #   _LOGGER.debug(f"Creating config entry with user input: {user_input}")
-                return self.async_create_entry(title="Weather Image Generator", data=user_input)
+                # Store the valid API keys, model choices, and location name temporarily
+                self.openai_api_key = user_input['openai_api_key']
+                self.googlemaps_api_key = user_input['googlemaps_api_key']
+                self.gpt_model_name = user_input['gpt_model_name']
+                self.image_model_name = user_input['image_model_name']
+
+                # Store the location name in hass.data
+                if self.hass.data.get(DOMAIN) is None:
+                    self.hass.data[DOMAIN] = {}
+                self.hass.data[DOMAIN]['temporary_location_name'] = google_location_name
+
+                # Proceed to the location step
+                return await self.async_step_location()
+
+        # Initial form for API keys and model choices
+        data_schema = vol.Schema({
+            vol.Required('openai_api_key', default="your openai api key here"): str,
+            vol.Required('googlemaps_api_key', default="your googlemaps api key here"): str,
+            vol.Optional('gpt_model_name', default='gpt-3.5-turbo'): vol.In(['gpt-3.5-turbo', 'gpt-4']),
+            vol.Optional('image_model_name', default='dall-e-2'): vol.In(['dall-e-2', 'dall-e-3']),
+        })
 
         # Show the form again with any errors
-        return self.async_show_form(step_id="user", data_schema=data_schema, errors=errors)
+        return self.async_show_form(
+            step_id="user", data_schema=data_schema, errors=errors
+        )
 
+    async def async_step_location(self, user_input=None):
+        """Handle the location configuration step."""
+        errors = {}
+
+        if user_input is not None:
+            # Use the stored location name
+            location_name = self.hass.data[DOMAIN].get('temporary_location_name', "Unknown Location")
+
+            # Create the final configuration with the user-provided or stored location name
+            final_configuration = {
+                'openai_api_key': self.openai_api_key,
+                'googlemaps_api_key': self.googlemaps_api_key,
+                'gpt_model_name': self.gpt_model_name,
+                'image_model_name': self.image_model_name,
+                'location_name': user_input.get('location_name', location_name)
+            }
+
+            # Create the configuration entry
+            return self.async_create_entry(title="Weather Canvas AI", data=final_configuration)
+
+        # Form for finalizing location
+        stored_location_name = self.hass.data[DOMAIN].get('temporary_location_name', "Enter location")
+        data_schema = vol.Schema({
+            vol.Required('location_name', default=stored_location_name): str,
+        })
+
+        # Show the form again with any errors
+        return self.async_show_form(
+            step_id="location", data_schema=data_schema, errors=errors
+        )
 
     async def test_openai_api(self, api_key, gpt_model_name):
         try:

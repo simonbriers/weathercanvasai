@@ -82,4 +82,4 @@ class HAWeatherCanvasAICamera(Camera):
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the HAWeatherCanvasAICamera from a config entry."""
-    async_add_entities([HAWeatherCanvasAICamera(hass, config_entry.entry_id, "WeatherCanvasAI Image")])
+    async_add_entities([HAWeatherCanvasAICamera(hass, config_entry.entry_id, "HAWeatherCanvasAI Image")])
