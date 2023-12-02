@@ -158,7 +158,7 @@ async def async_create_dalle_prompt(hass: HomeAssistant, chatgpt_in: str, config
         return "Error: OpenAI API key is not configured."
 
     # System instruction for DALL-E prompt creation
-    system_instruction = "Create a succinct DALL-E prompt under 100 words, focusing on the most visually striking aspects of the given city/region, weather, and time of day. Highlight key elements that define the scene's character, such as specific landmarks, weather effects, or cultural features, in a direct and vivid manner. Avoid elaborate descriptions; instead, aim for a prompt that vividly captures the essence of the scene in a concise format, suitable for generating a distinct and compelling image."
+    system_instruction = "Create a succinct DALL-E prompt under 100 words, that will create a 3D Isometric photorealistic MMORPG-style illustration, focusing on the most visually striking aspects, of the given city/region, weather, and time of day. Highlight key elements that define the scene's character, such as specific landmarks, weather effects, folkore or cultural features, in a direct and vivid manner. Avoid elaborate descriptions; instead, aim for a prompt that vividly captures the essence of the scene in a concise format, suitable for generating a distinct and compelling image."
 
     def make_api_call():
         openai.api_key = openai_api_key

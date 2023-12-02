@@ -16,7 +16,7 @@ from homeassistant.const import (
     CONF_LONGITUDE,
     CONF_NAME
 )
-from .sensor import Weather2ImgPromptsSensor
+from .sensor import HAWeatherCanvasAIPromptsSensor
 from .weather_processing import generate_dalle_image
 from .config_flow import WeatherImageGeneratorOptionsFlowHandler
 
@@ -80,9 +80,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         dummy_url = "https://via.placeholder.com/300.png?text=Dalle+Test"
 
         # Dispatch the update to the camera with the dummy URL
-        async_dispatcher_send(hass, "update_dalle_weather_image_camera", dummy_url)
+        async_dispatcher_send(hass, "update_HAWeatherCanvasAI_camera", dummy_url)
 
-    # Register the weather2img service
+    # Register the load_testimage service
     hass.services.async_register(DOMAIN, 'load_testimage', handle_load_test_image)
 
     # Define the create gpt prompt service handler
@@ -129,10 +129,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     # Define the "create dalle image" service handler
     async def create_dalle_image_service(call):
-        # Define the entity ID of the Weather2ImgPromptsSensor
-        entity_id = "sensor.weather2img_prompts"
+        # Define the entity ID of the HAWeatherCanvasAIPromptsSensor
+        entity_id = "sensor.HAWeatherCanvasAI_prompts"
 
-        # Retrieve the state of the Weather2ImgPromptsSensor
+        # Retrieve the state of the HAWeatherCanvasAIPromptsSensor
         sensor_state = hass.states.get(entity_id)
 
         if sensor_state is None:
@@ -151,7 +151,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             if image_url:
                 _LOGGER.info(f"DALL-E image generated: {image_url}")
                 # Dispatch the update to the camera with the real image URL
-                async_dispatcher_send(hass, "update_dalle_weather_image_camera", image_url)
+                async_dispatcher_send(hass, "update_HAWeatherCanvasAI_camera", image_url)
             else:
                 _LOGGER.error("Failed to generate DALL-E image or invalid URL received")
         except Exception as e:
