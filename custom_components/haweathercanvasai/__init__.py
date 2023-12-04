@@ -16,7 +16,7 @@ from homeassistant.const import (
     CONF_LONGITUDE,
     CONF_NAME
 )
-from .sensor import haweathercanvasaiPromptsSensor
+from .sensor import weathercanvasaiPromptsSensor
 from .weather_processing import generate_dalle_image
 from .config_flow import WeatherImageGeneratorOptionsFlowHandler
 
@@ -37,11 +37,11 @@ async def update_listener(hass: HomeAssistant, entry: ConfigEntry):
 
 
 async def async_setup(hass: HomeAssistant, config: dict):
-    """Set up the haweathercanvasai component."""
+    """Set up the weathercanvasai component."""
     return True
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
-    """Set up haweathercanvasai from a config entry."""
+    """Set up weathercanvasai from a config entry."""
     _LOGGER.debug("Entering async_step_setup_entry")
     
     # Check if the integration is already fully set up
@@ -80,7 +80,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         dummy_url = "https://via.placeholder.com/300.png?text=Dalle+Test"
 
         # Dispatch the update to the camera with the dummy URL
-        async_dispatcher_send(hass, "update_haweathercanvasai_camera", dummy_url)
+        async_dispatcher_send(hass, "update_weathercanvasai_camera", dummy_url)
 
     # Register the load_testimage service
     hass.services.async_register(DOMAIN, 'load_testimage', handle_load_test_image)
@@ -117,7 +117,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             # Use chatgpt_out for further processing or return it
             _LOGGER.debug(f"DALL-E Prompt: {chatgpt_out}")
             # Dispatch the update to the sensor with new data
-            async_dispatcher_send(hass, "update_haweathercanvasai_sensor", {
+            async_dispatcher_send(hass, "update_weathercanvasai_sensor", {
                 "chatgpt_in": chatgpt_in,
                 "chatgpt_out": chatgpt_out,
             })
@@ -129,10 +129,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     # Define the "create dalle image" service handler
     async def create_dalle_image_service(call):
-        # Define the entity ID of the haweathercanvasaiPromptsSensor
-        entity_id = "sensor.haweathercanvasai_prompts"
+        # Define the entity ID of the weathercanvasaiPromptsSensor
+        entity_id = "sensor.weathercanvasai_prompts"
 
-        # Retrieve the state of the haweathercanvasaiPromptsSensor
+        # Retrieve the state of the weathercanvasaiPromptsSensor
         sensor_state = hass.states.get(entity_id)
 
         if sensor_state is None:
@@ -151,7 +151,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             if image_url:
                 _LOGGER.info(f"DALL-E image generated: {image_url}")
                 # Dispatch the update to the camera with the real image URL
-                async_dispatcher_send(hass, "update_haweathercanvasai_camera", image_url)
+                async_dispatcher_send(hass, "update_weathercanvasai_camera", image_url)
             else:
                 _LOGGER.error("Failed to generate DALL-E image or invalid URL received")
         except Exception as e:
