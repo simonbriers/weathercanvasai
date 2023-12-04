@@ -10,7 +10,7 @@ Be aware that there is a small cost involved for the api calls to ChatGPT and to
 
 ## Features
 - **Dynamic Image Generation**: Utilizes DALL-E to generate images based on ChatGPT prompts.
-- **Location Awareness**: Integrates with Googlemaps: based on your location (LongLat) fom you Home Assistant, a reverse geocache is called to Googlemaps API. You need to get you API for this. Googlemaps will return the name of the town or city, province, state and country. As this data is be passed Dalle, it is smart enough to create something that is suitable for your location. If you would live in a famous street, it could use that as well, but this information is not passed at this mooment.
+- **Location Awareness**: Integrates with Googlemaps: based on your location (LongLat) fom you Home Assistant, a reverse geocache is called to Googlemaps API. You need to get your API for this. Googlemaps will return the name of the town or city, province, state and country. As this data is be passed to Dalle, it is smart enough to create something that is suitable for your location. If you would live in a famous street, it could use that as well, but this information is not passed at this mooment.
 - **Weather Awareness**: Integrates with OpenWeatherMap for real-time weather data and uses location data from Home Assistant.
 - **Configurable via Home Assistant**: Easy setup and configuration through the Home Assistant interface.
 
@@ -21,14 +21,15 @@ Be aware that there is a small cost involved for the api calls to ChatGPT and to
   - **Google Maps API Key**: For location services. (Reverse geocaching to retrieve our adress from your HA coordinates)
 
 ##Install Dependencies:
-- `openweathermap` integration is not a mandatory but an advisable installation. You need an account and API key (free). You can skip this installation. However, if no weatherdata can be retrieved from openwaethermap, ChatGPT wil be instructed 'to be creative about the weatherconditions'. An image will stil be generated for the location, the season and time of day, but the current weatherconditions wil not be incorporated in the image. It may be winter with a perfect sunny day, while you wil get an image with a meter of snow. Openweathermap will provide temperature, general weather conditions and cloudiness that wil be passed on in the prompt to Dall-E.
+- `openweathermap` integration is not a mandatory but an advisable installation. You need an account and API key (free). You can skip this installation. However, if no weatherdata can be retrieved from openwaethermap, ChatGPT wil be instructed 'to be creative about the weatherconditions'. An image will stil be generated for the location, the season and time of day, but the current weatherconditions wil not be incorporated in the image. It may be winter with a perfect sunny day, while you will get an image with a meter of snow. Openweathermap will provide temperature, general weather conditions and cloudiness that wil be passed on in the prompt to Dall-E.
 
 ## Installation
-There are two ways to install. 
+There are two ways to install:
+ 
 1. **Download and Install the Integration**:
    - Place the integration files in your Home Assistant's custom components directory.
 2. **Install with HACS (Home Assistant Custom Component Store)
-   - In HACS, click in integrations, then click the 3 dots in the top right corner
+   - In HACS, click on integrations, then click the 3 dots in the top right corner
    - From the dropdown menu, choose "Custom Repositories"
    - Enter https://github.com/simonbriers/weathercanvasai as repository and choose integration for the second field.
    - 
