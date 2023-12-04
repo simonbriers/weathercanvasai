@@ -15,17 +15,24 @@ Be aware that there is a small cost involved for the api calls to ChatGPT and to
 - **Configurable via Home Assistant**: Easy setup and configuration through the Home Assistant interface.
 
 ## Prerequisites
-- **Home Assistant Installation**: Ensure you have Home Assistant running on your hardware.
 - **API Keys Required**:
   - **OpenAI API Key**: For accessing DALL-E services (requires a subscription plan).
   - **OpenWeatherMap API Key**: Free key for weather data, obtained after registration.
   - **Google Maps API Key**: For location services. (Reverse geocaching to retrieve our adress from your HA coordinates)
 
+##Install Dependencies:
+- Ensure `openweathermap` integration is installed and configured in Home Assistant. You need an account and API key (free)
+
 ## Installation
+There are two ways to install. 
 1. **Download and Install the Integration**:
    - Place the integration files in your Home Assistant's custom components directory.
-2. **Install Dependencies**:
-   - Ensure `openweathermap` integration is installed and configured in Home Assistant.
+2. **Install with HACS (Home Assistant Custom Component Store)
+   - In HACS, click in integrations, then click the 3 dots in the top right corner
+   - From the dropdown menu, choose "Custom Repositories"
+   - Enter https://github.com/simonbriers/HAWeatherCanvasAI as reporitory and choose integration for the second field.
+   - In your main HA menu, go to Settings - Devices and services and choose "+ Add integration"
+   - In the search fil, enter "Weather Canvas AI"
 
 ## Configuration
 1. **Via Home Assistant UI**:
