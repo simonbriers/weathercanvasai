@@ -8,7 +8,7 @@ from datetime import datetime
 
 _LOGGER = logging.getLogger(__name__)
 
-class haweathercanvasaiCamera(Camera):
+class weathercanvasaiCamera(Camera):
     def __init__(self, hass, entry_id, name):
         """Initialize the camera."""
         super().__init__()
@@ -55,7 +55,7 @@ class haweathercanvasaiCamera(Camera):
         """Register callbacks when entity is added."""
         self._remove_signal = async_dispatcher_connect(
             self.hass, 
-            "update_haweathercanvasai_camera", 
+            "update_weathercanvasai_camera", 
             self._update_image_url
         )
 
@@ -81,5 +81,5 @@ class haweathercanvasaiCamera(Camera):
             _LOGGER.error("Failed to fetch new image.")
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
-    """Set up the haweathercanvasaiCamera from a config entry."""
-    async_add_entities([haweathercanvasaiCamera(hass, config_entry.entry_id, "haweathercanvasai Image")])
+    """Set up the weathercanvasaiCamera from a config entry."""
+    async_add_entities([weathercanvasaiCamera(hass, config_entry.entry_id, "weathercanvasai Image")])
