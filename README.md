@@ -21,7 +21,7 @@ Be aware that there is a small cost involved for the api calls to ChatGPT and to
   - **Google Maps API Key**: For location services. (Reverse geocaching to retrieve our adress from your HA coordinates)
 
 ##Install Dependencies:
-- Ensure `openweathermap` integration is installed and configured in Home Assistant. You need an account and API key (free)
+- `openweathermap` integration is not a mandatory but an advisable installation. You need an account and API key (free). You can skip this installation. However, if no weatherdata can be retrieved from openwaethermap, ChatGPT wil be instructed 'to be creative about the weatherconditions'. An image will stil be generated for the location, the season and time of day, but the current weatherconditions wil not be incorporated in the image. It may be winter with a perfect sunny day, while you wil get an image with a meter of snow. Openweathermap will provide temperature, general weather conditions and cloudiness that wil be passed on in the prompt to Dall-E.
 
 ## Installation
 There are two ways to install. 
