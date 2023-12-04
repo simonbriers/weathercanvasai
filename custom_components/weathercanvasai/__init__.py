@@ -17,7 +17,7 @@ from homeassistant.const import (
     CONF_NAME
 )
 from .sensor import weathercanvasaiPromptsSensor
-from .weather_processing import generate_dalle_image
+from .weather_processing import (generate_dalle2_image, generate_dalle2_image)
 from .config_flow import WeatherImageGeneratorOptionsFlowHandler
 
 
@@ -127,8 +127,38 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # Register the gpt prompt service
     hass.services.async_register(DOMAIN, 'create_chatgpt_prompt', create_gpt_prompt_service)
 
-    # Define the "create dalle image" service handler
-    async def create_dalle_image_service(call):
+    # Define the "create dalle2 image" service handler
+    async def create_dalle2_image_service(call):
+        # Define the entity ID of the weathercanvasaiPromptsSensor
+        entity_id = "sensor.weathercanvasai_prompts"
+
+        # Retrieve the state of the weathercanvasaiPromptsSensor
+        sensor_state = hass.states.get(entity_id)
+
+        if sensor_state is None:
+            _LOGGER.error(f"Entity {entity_id} not found")
+            return
+
+        # Retrieve the 'chatgpt_out' attribute from the sensor's state
+        prompt = sensor_state.attributes.get("chatgpt_out")
+
+        if not prompt:
+            _LOGGER.error("No 'chatgpt_out' prompt found for DALL-E image generation")
+            return
+
+        try:
+            image_url = await generate_dalle_image(hass, prompt)
+            if image_url:
+                _LOGGER.info(f"DALL-E image generated: {image_url}")
+                # Dispatch the update to the camera with the real image URL
+                async_dispatcher_send(hass, "update_weathercanvasai_camera", image_url)
+            else:
+                _LOGGER.error("Failed to generate DALL-E image or invalid URL received")
+        except Exception as e:
+            _LOGGER.error(f"Error generating DALL-E image: {e}")
+
+    # Define the "create dalle3 image" service handler
+    async def create_dalle3_image_service(call):
         # Define the entity ID of the weathercanvasaiPromptsSensor
         entity_id = "sensor.weathercanvasai_prompts"
 
@@ -157,8 +187,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         except Exception as e:
             _LOGGER.error(f"Error generating DALL-E image: {e}")
             
-    # Register the "create dalle image" service
-    hass.services.async_register(DOMAIN, 'create_dalle_image', create_dalle_image_service)
+    # Register the "create dalle3 image" service
+    hass.services.async_register(DOMAIN, 'create_dalle_image', create_dalle3_image_service)
 
 
     # At the end of the setup process, after successfully setting up

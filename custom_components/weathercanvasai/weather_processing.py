@@ -188,7 +188,76 @@ async def async_create_dalle_prompt(hass: HomeAssistant, chatgpt_in: str, config
 
     return "Error: No response from ChatGPT."
 
-async def generate_dalle_image(hass, prompt):
+async def generate_dalle2_image(hass, prompt):
+    """Generate an image using DALL-E and return the accessible URL."""
+    
+    # Retrieve the OpenAI API key and DALL-E model name from the configuration
+    config_data = hass.data[DOMAIN]
+    openai_api_key = config_data['openai_api_key']
+    image_model_name = config_data['image_model_name']
+
+    # Endpoint
+    openai_url = "https://api.openai.com/v1/images/generations"
+    
+    # Headers
+    headers = {
+        "Authorization": f"Bearer {openai_api_key}",
+        "Content-Type": "application/json"
+    }
+    
+    # Payload
+    payload = {
+        "prompt": prompt,
+        "n": 1,
+        "model": image_model_name,
+        "size": "1024x1024"
+    }
+
+    _LOGGER.debug("Payload for DALL-E API: %s", payload)
+
+    # Make the POST request to OpenAI API
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.post(openai_url, json=payload, headers=headers) as response:
+                _LOGGER.debug("Received response status: %s", response.status)
+                response_text = await response.text()
+                _LOGGER.debug("Received response text: %s", response_text)
+                if response.status == 200:
+                    result = await response.json()
+                    # Check if 'data' is present in the response and it is not empty
+                    if 'data' in result and result['data']:
+                        # Extract the image URL directly from the data array
+                        image_url = result['data'][0].get('url')
+                        if image_url:
+                            async with session.get(image_url) as image_response:
+                                if image_response.status == 200:
+                                    image_data = await image_response.read()
+                                    try:
+                                        os.makedirs('/config/www', exist_ok=True)  # Create the directory if it doesn't exist
+                                        with open('/config/www/dalle.png', 'wb') as file:
+                                            file.write(image_data)
+                                        _LOGGER.debug("Image saved as dalle.png in the directory: %s", os.getcwd())
+                                        return image_url  # Return the image URL if saved successfully
+                                    except Exception as e:
+                                        _LOGGER.error("Error saving the image: %s", str(e))
+                                        return None  # Return None if there's an error
+                                else:
+                                    _LOGGER.error("Failed to download image: %s", image_response.status)
+                                    return None  # Return None if the image download failed
+                        else:
+                            _LOGGER.error("No 'url' key in the response data.")
+                            return None
+                    else:
+                        _LOGGER.error("The 'data' key is missing or empty in the response.")
+                        return None
+                else:
+                    _LOGGER.error("Failed to generate image with DALL-E: %s", response.status)
+                    return None
+        except Exception as e:
+            _LOGGER.error("Exception occurred while generating image with DALL-E: %s", str(e))
+            return None
+
+async def generate_dalle3_image(hass, prompt):
     """Generate an image using DALL-E and return the accessible URL."""
     
     # Retrieve the OpenAI API key and DALL-E model name from the configuration
