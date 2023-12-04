@@ -1,3 +1,6 @@
+
+
+
 import logging
 import datetime
 from homeassistant.core import HomeAssistant
@@ -16,6 +19,8 @@ from homeassistant.const import (
     CONF_LONGITUDE,
     CONF_NAME
 )
+import voluptuous as vol
+from homeassistant.helpers import config_validation as cv
 from .sensor import weathercanvasaiPromptsSensor
 from .weather_processing import (generate_dalle2_image, generate_dalle3_image)
 from .config_flow import WeatherImageGeneratorOptionsFlowHandler
@@ -197,6 +202,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             
     # Register the "create dalle3 image" service
     hass.services.async_register(DOMAIN, 'create_dalle3_image', create_dalle3_image_service)
+
+    # Service schemas
+    CREATE_DALLE2_IMAGE_SCHEMA = vol.Schema({
+        vol.Optional("size", default="1024x1024"): cv.string,
+    })
+
+    CREATE_DALLE3_IMAGE_SCHEMA = vol.Schema({
+        vol.Optional("size", default="1024x1024"): cv.string,
+        vol.Optional("quality", default="standard"): cv.string,
+        vol.Optional("style", default="vivid"): cv.string,
+    })
+
+    # Register services
+    hass.services.async_register(DOMAIN, 'create_dalle2_image', create_dalle2_image_service, schema=CREATE_DALLE2_IMAGE_SCHEMA)
+    hass.services.async_register(DOMAIN, 'create_dalle3_image', create_dalle3_image_service, schema=CREATE_DALLE3_IMAGE_SCHEMA)
 
 
     # At the end of the setup process, after successfully setting up
