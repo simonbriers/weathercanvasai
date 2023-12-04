@@ -1,0 +1,1 @@
+docker run -d --name=home-assistant -v C:\AI\home_assistant_config:/config -e TZ=Europe/Brussels -p 8123:8123 --restart unless-stopped homeassistant/home-assistant:stable

@@ -1,1 +1,1 @@
-DOMAIN = "HAWeatherCanvasAI"
+DOMAIN = "haweathercanvasai"

@@ -4,7 +4,7 @@ from homeassistant.const import ATTR_ATTRIBUTION
 from .const import DOMAIN
 from datetime import datetime
 
-class HAWeatherCanvasAIPromptsSensor(SensorEntity):
+class haweathercanvasaiPromptsSensor(SensorEntity):
     def __init__(self, hass, entry_id, name):
         """Initialize the sensor."""
         self.hass = hass
@@ -38,7 +38,7 @@ class HAWeatherCanvasAIPromptsSensor(SensorEntity):
         """Register callbacks when entity is added."""
         async_dispatcher_connect(
             self.hass, 
-            "update_HAWeatherCanvasAI_sensor", 
+            "update_haweathercanvasai_sensor", 
             self._update_sensor
         )
 
@@ -53,5 +53,5 @@ class HAWeatherCanvasAIPromptsSensor(SensorEntity):
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the sensor upon entry setup."""
-    sensor = HAWeatherCanvasAIPromptsSensor(hass, config_entry.entry_id, "HAWeatherCanvasAI Prompts")
+    sensor = haweathercanvasaiPromptsSensor(hass, config_entry.entry_id, "haweathercanvasai Prompts")
     async_add_entities([sensor])
