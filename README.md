@@ -32,10 +32,17 @@ There are two ways to install.
    - From the dropdown menu, choose "Custom Repositories"
    - Enter https://github.com/simonbriers/weathercanvasai as repository and choose integration for the second field.
   ![image](https://github.com/simonbriers/weathercanvasai/assets/101293590/20378c3f-911c-49b1-a5ff-4ebd5afc30c6)
-
-     
+   - In the next windows, click on Weather Canvas AI (left of the bin)
+  ![image](https://github.com/simonbriers/weathercanvasai/assets/101293590/034d65a3-8143-4f30-a5e5-3371b50f570b)
+   - This readme will open, click on download in the down-right corner
+  ![image](https://github.com/simonbriers/weathercanvasai/assets/101293590/2fade912-d63d-42cf-bf19-4373cad06ae3)
+   - confirm the downloas and restart HA
+    
    - In your main HA menu, go to Settings - Devices and services and choose "+ Add integration"
-   - In the search fil, enter "Weather Canvas AI"
+   - In the search field, enter "Weather Canvas AI"
+  ![image](https://github.com/simonbriers/weathercanvasai/assets/101293590/1f51eff3-1686-4370-a515-a819ca113ca2)
+   - you should now arrive in the configuration menu
+  ![image](https://github.com/simonbriers/weathercanvasai/assets/101293590/46992dce-6ebd-400c-8fb1-779b52cb7535)
 
 ## Configuration
 1. **Via Home Assistant UI**:
