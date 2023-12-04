@@ -31,6 +31,9 @@ There are two ways to install.
    - In HACS, click in integrations, then click the 3 dots in the top right corner
    - From the dropdown menu, choose "Custom Repositories"
    - Enter https://github.com/simonbriers/weathercanvasai as repository and choose integration for the second field.
+  ![image](https://github.com/simonbriers/weathercanvasai/assets/101293590/20378c3f-911c-49b1-a5ff-4ebd5afc30c6)
+
+     
    - In your main HA menu, go to Settings - Devices and services and choose "+ Add integration"
    - In the search fil, enter "Weather Canvas AI"
 
