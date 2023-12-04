@@ -5,8 +5,8 @@
       },
       "step": {
         "user": {
-          "title": "Weather Image Generator",
-          "description": "Configure your API keys and preferences for the Weather Image Generator."
+          "title": "Weather canvas AI",
+          "description": "Configure your API keys and preferences for the Weather Canvas AI."
         }
       }
     }
