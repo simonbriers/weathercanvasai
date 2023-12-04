@@ -111,6 +111,12 @@ The integration offers three services:
 - Updates the `camera.weathercanvasai_image` entity with the new image URL upon successful generation.
 
 ## Usage and Integration in UI
+- **Call the service "Weather Canvas AI: create_chatgpt_prompt"** to have ChatGPT pepare a promp based on the season, time of day, weather conditions and location.
+
+![image](https://github.com/simonbriers/weathercanvasai/assets/101293590/60e24bfe-3276-4475-b269-54ec0fa49072)
+
+- **Call the service "Weather Canvas AI: create_dalle_image"** to send the prompt to Dall-E. The camera entity will be updated with the image. The image will be saved under /config/www 
+
 - **Generated Image Accessibility**:
   - The last generated image by `camera.weathercanvasai_image` is saved in the Home Assistant configuration directory under `/local`. (This is your /configuration/www directory)
   - This enables easy integration of the image into different parts of the Home Assistant UI, such as in an image card, providing dynamic visual content based on the current environmental conditions.
