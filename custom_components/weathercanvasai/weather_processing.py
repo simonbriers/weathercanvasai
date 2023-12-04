@@ -257,14 +257,14 @@ async def generate_dalle2_image(hass, prompt):
             _LOGGER.error("Exception occurred while generating image with DALL-E: %s", str(e))
             return None
 
-async def generate_dalle3_image(hass, prompt):
+async def generate_dalle_image(hass, prompt, size, quality, style):
+
     """Generate an image using DALL-E and return the accessible URL."""
     
     # Retrieve the OpenAI API key and DALL-E model name from the configuration
     config_data = hass.data[DOMAIN]
     openai_api_key = config_data['openai_api_key']
-    image_model_name = config_data['image_model_name']
-
+    
     # Endpoint
     openai_url = "https://api.openai.com/v1/images/generations"
     
@@ -278,11 +278,12 @@ async def generate_dalle3_image(hass, prompt):
     payload = {
         "prompt": prompt,
         "n": 1,
-        "model": image_model_name,
-        "size": "1024x1024"
+        "model": "dall-e-3",
+        "size": size,
+        "quality": quality,
+        "style": style
     }
-
-    _LOGGER.debug("Payload for DALL-E API: %s", payload)
+    _LOGGER.debug("Payload for DALL-E-3 API: %s", payload)
 
     # Make the POST request to OpenAI API
     async with aiohttp.ClientSession() as session:
