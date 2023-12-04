@@ -145,8 +145,8 @@ async def async_get_weather_conditions(hass: HomeAssistant) -> str:
 
         return prompt
     else:
-        _LOGGER.error("Weather data could not be retrieved.")
-        return "Weather data could not be retrieved."
+        _LOGGER.info("Weather data could not be retrieved.")
+        return "Be creative about the weather."
     
 async def async_create_dalle_prompt(hass: HomeAssistant, chatgpt_in: str, config_data: dict) -> str:
     openai_api_key = config_data.get("openai_api_key")
