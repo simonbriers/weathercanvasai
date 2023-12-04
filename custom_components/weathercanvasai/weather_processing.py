@@ -233,13 +233,14 @@ async def generate_dalle_image(hass, prompt):
                                 if image_response.status == 200:
                                     image_data = await image_response.read()
                                     try:
+                                        os.makedirs('/config/www', exist_ok=True)  # Create the directory if it doesn't exist
                                         with open('/config/www/dalle.png', 'wb') as file:
                                             file.write(image_data)
                                         _LOGGER.debug("Image saved as dalle.png in the directory: %s", os.getcwd())
                                         return image_url  # Return the image URL if saved successfully
                                     except Exception as e:
                                         _LOGGER.error("Error saving the image: %s", str(e))
-                                        return None  # Return None if there's an error saving the image
+                                        return None  # Return None if there's an error
                                 else:
                                     _LOGGER.error("Failed to download image: %s", image_response.status)
                                     return None  # Return None if the image download failed
