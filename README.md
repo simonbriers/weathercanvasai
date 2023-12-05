@@ -153,6 +153,8 @@ Dall-e-3 offers a variety of options to customize the generated images:
   - Options are `vivid` for hyper-real and dramatic images or `natural` for more natural-looking images.
   - Default is `vivid`.
 
+![image](https://github.com/simonbriers/weathercanvasai/assets/101293590/7d6e38a4-eb03-4797-88d1-0ad85e8858b9)
+
 ## YAML Configuration Example
 
 To create a custom Dall-e-3 image with the desired options, use the following YAML configuration:
@@ -160,9 +162,9 @@ To create a custom Dall-e-3 image with the desired options, use the following YA
 ```yaml
 service: weathercanvasai.create_dalle3_image
 data:
-  size: "1024x1792"
-  quality: "hd"
-  style: "natural"
+  size: 1792x1024
+  quality: hd
+  style: vivid
 ```
  
 ## Usage and Integration in UI
