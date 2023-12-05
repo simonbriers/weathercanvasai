@@ -257,7 +257,7 @@ async def generate_dalle2_image(hass, prompt):
             _LOGGER.error("Exception occurred while generating image with DALL-E: %s", str(e))
             return None
 
-async def generate_dalle_image(hass, prompt, size, quality, style):
+async def generate_dalle3_image(hass, prompt, size, quality, style):
 
     """Generate an image using DALL-E and return the accessible URL."""
     
