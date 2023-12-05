@@ -6,11 +6,11 @@ Home Assistant weather image generator with OpenAI and Dall-E
 ## Description
 This custom integration for Home Assistant generates images using DALL-E, driven by prompts constructed from location and weather data. It combines data from Home Assistant, OpenWeatherMap, Googlemaps, and uses the OpenAI API to create unique, contextually relevant images.
 Since the installed openai libary for python is the outdated 0.28, this integration makes direct calls to the latest Openai api endpoints, thus avoiding the python libary installed in HA at this moment. I didn't want the integration to forceupdate the libary to the current 1.3.5, as this would render your installation non standard and would require reinstallation on every update of HA.
-Be aware that there is a small cost involved for the api calls to ChatGPT and to Dall-E. You need an Opanai account and an active payment method to be able to use their api. You can choose the model you want during setup. The tokens sent to ChatGPT are limited, the cost is negligable. To fetch a Dalle-3 image, they cost at the moment € 0.04, for Dale-2 € 0.02 per call. The difference in quality is huge however. Api calls are only made by services, up to you if you do this manually or in an automations once every ... . Every hour during night and day would be 24 calls and cost € 1 per day. Be aware, that's € 30 per month ! 1 picture per day comes down to € 1.25 per month. You have been warned ! I have a version that makes an api call to a local automatic1111 server, but this relies on that server running nonstop in you homenetwork. If someone is aware of a free Stable diffusion service, I will test and provide another version.
+Be aware that there is a small cost involved for the api calls to ChatGPT and to Dall-E. You need an Openai account and an active payment method to be able to use their api. You can choose the model you want during setup. The tokens sent to ChatGPT are limited, the cost is negligable. To fetch a Dalle-3 image, they cost at the moment € 0.04, for Dale-2 € 0.02 per call. The difference in quality is huge however. Api calls are only made by services, up to you if you do this manually or in an automations once every ... . Every hour during night and day would be 24 calls and cost € 1 per day. Be aware, that's € 30 per month ! 1 picture per day comes down to € 1.25 per month. You have been warned ! I have a version that makes an api call to a local automatic1111 server, but this relies on that server running nonstop in you homenetwork. If someone is aware of a free Stable diffusion service, I will test and provide another version.
 
 ## Features
 - **Dynamic Image Generation**: Utilizes DALL-E to generate images based on ChatGPT prompts.
-- **Location Awareness**: Integrates with Googlemaps: based on your location (LongLat) fom you Home Assistant, a reverse geocache is called to Googlemaps API. You need to get you API for this. Googlemaps will return the name of the town or city, province, state and country. As this data is be passed Dalle, it is smart enough to create something that is suitable for your location. If you would live in a famous street, it could use that as well, but this information is not passed at this mooment.
+- **Location Awareness**: Integrates with Googlemaps: based on your location (LongLat) fom you Home Assistant, a reverse geocache is called to Googlemaps API. You need to get your API for this. Googlemaps will return the name of the town or city, province, state and country. As this data is be passed to Dalle, it is smart enough to create something that is suitable for your location. If you would live in a famous street, it could use that as well, but this information is not passed at this mooment.
 - **Weather Awareness**: Integrates with OpenWeatherMap for real-time weather data and uses location data from Home Assistant.
 - **Configurable via Home Assistant**: Easy setup and configuration through the Home Assistant interface.
 
@@ -21,14 +21,15 @@ Be aware that there is a small cost involved for the api calls to ChatGPT and to
   - **Google Maps API Key**: For location services. (Reverse geocaching to retrieve our adress from your HA coordinates)
 
 ##Install Dependencies:
-- `openweathermap` integration is not a mandatory but an advisable installation. You need an account and API key (free). You can skip this installation. However, if no weatherdata can be retrieved from openwaethermap, ChatGPT wil be instructed 'to be creative about the weatherconditions'. An image will stil be generated for the location, the season and time of day, but the current weatherconditions wil not be incorporated in the image. It may be winter with a perfect sunny day, while you wil get an image with a meter of snow. Openweathermap will provide temperature, general weather conditions and cloudiness that wil be passed on in the prompt to Dall-E.
+- `openweathermap` integration is not a mandatory but an advisable installation. You need an account and API key (free). You can skip this installation. However, if no weatherdata can be retrieved from openwaethermap, ChatGPT wil be instructed 'to be creative about the weatherconditions'. An image will stil be generated for the location, the season and time of day, but the current weatherconditions wil not be incorporated in the image. It may be winter with a perfect sunny day, while you will get an image with a meter of snow. Openweathermap will provide temperature, general weather conditions and cloudiness that wil be passed on in the prompt to Dall-E.
 
 ## Installation
-There are two ways to install. 
+There are two ways to install:
+ 
 1. **Download and Install the Integration**:
    - Place the integration files in your Home Assistant's custom components directory.
 2. **Install with HACS (Home Assistant Custom Component Store)
-   - In HACS, click in integrations, then click the 3 dots in the top right corner
+   - In HACS, click on integrations, then click the 3 dots in the top right corner
    - From the dropdown menu, choose "Custom Repositories"
    - Enter https://github.com/simonbriers/weathercanvasai as repository and choose integration for the second field.
    - 
@@ -94,7 +95,7 @@ The integration offers three services:
 ### Functionality
 - Loads a dummy image URL into the camera entity (`camera.dalle_weather_image`) for testing purposes.
 
-## Service: `create_chatgpt_prompt`
+## Service: `create_chatgpt_prompt` (to be called before attempting to generate an image with Dall-E)
 ### Purpose
 - Creates a ChatGPT prompt combining location, time of day, season, and weather conditions for image generation.
 ### Functionality
@@ -102,20 +103,76 @@ The integration offers three services:
 - Processes `chatgpt_in` to generate `chatgpt_out` for use in DALL-E image generation.
 - Dispatches `chatgpt_out` to update the `sensor.weathercanvasai_prompts`.
 
-## Service: `create_dalle_image`
+## Service: `create_dalle2_image`
 ### Purpose
-- Generates an image using DALL-E based on the ChatGPT prompt.
+- Generates an image using DALL-E-2 based on the ChatGPT prompt.
 ### Functionality
 - Retrieves `chatgpt_out` from `sensor.weathercanvasai_prompts`.
-- Uses this prompt to generate an image via DALL-E.
+- Uses this prompt to generate an image via DALL-E-2.
 - Updates the `camera.weathercanvasai_image` entity with the new image URL upon successful generation.
 
+### Options
+
+Dall-e-2 offers an options to customize the size of the generated images:
+
+- `size`: Specifies the size of the generated image.
+  - Available options are: `256x256`, `512x512`, or `1024x1792`.
+  - Default is `1024x1024`.
+
+## YAML Configuration Example
+
+To create a custom Dall-e-2 image with the desired options, use the following YAML configuration:
+
+```yaml
+service: weathercanvasai.create_dalle2_image
+data:
+  size: "512x512"
+````
+
+## Service: `create_dalle3_image`
+### Purpose
+- Generates an image using DALL-E-3 based on the ChatGPT prompt.
+### Functionality
+- Retrieves `chatgpt_out` from `sensor.weathercanvasai_prompts`.
+- Uses this prompt to generate an image via DALL-E-3.
+- Updates the `camera.weathercanvasai_image` entity with the new image URL upon successful generation.
+
+### Options
+
+Dall-e-3 offers a variety of options to customize the generated images:
+
+- `size`: Specifies the size of the generated image.
+  - Available options are: `1024x1024`, `1792x1024`, or `1024x1792`.
+  - Default is `1024x1024`.
+  
+- `quality`: Determines the quality of the image.
+  - Choose `standard` for normal quality or `hd` for high definition which offers finer details and greater consistency.
+  - Default is `standard`.
+  
+- `style`: Defines the style of the generated images.
+  - Options are `vivid` for hyper-real and dramatic images or `natural` for more natural-looking images.
+  - Default is `vivid`.
+
+![image](https://github.com/simonbriers/weathercanvasai/assets/101293590/7d6e38a4-eb03-4797-88d1-0ad85e8858b9)
+
+## YAML Configuration Example
+
+To create a custom Dall-e-3 image with the desired options, use the following YAML configuration:
+
+```yaml
+service: weathercanvasai.create_dalle3_image
+data:
+  size: 1792x1024
+  quality: hd
+  style: vivid
+```
+ 
 ## Usage and Integration in UI
 - **Call the service "Weather Canvas AI: create_chatgpt_prompt"** to have ChatGPT pepare a promp based on the season, time of day, weather conditions and location.
 
 ![image](https://github.com/simonbriers/weathercanvasai/assets/101293590/60e24bfe-3276-4475-b269-54ec0fa49072)
 
-- **Call the service "Weather Canvas AI: create_dalle_image"** to send the prompt to Dall-E. The camera entity will be updated with the image. The image will be saved under /config/www 
+- **Call the service "Weather Canvas AI: create_dalle_image (2 or 3) "** to send the prompt to Dall-E. The camera entity will be updated with the image. The image will be saved under /config/www 
 
 - **Generated Image Accessibility**:
   - The last generated image by `camera.weathercanvasai_image` is saved in the Home Assistant configuration directory under `/local`. (This is your /configuration/www directory)
