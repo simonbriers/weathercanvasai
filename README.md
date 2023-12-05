@@ -117,6 +117,39 @@ service: custom_domain.create_dalle2_image
 data:
   size: "512x512"
 
+# Dall-e-3 Custom Image Generation
+
+## Options
+
+Dall-e-3 offers a variety of options to customize the generated images:
+
+- `size`: Specifies the size of the generated image.
+  - Available options are: `1024x1024`, `1792x1024`, or `1024x1792`.
+  - Default is `1024x1024`.
+  
+- `quality`: Determines the quality of the image.
+  - Choose `standard` for normal quality or `hd` for high definition which offers finer details and greater consistency.
+  - Default is `standard`.
+  
+- `style`: Defines the style of the generated images.
+  - Options are `vivid` for hyper-real and dramatic images or `natural` for more natural-looking images.
+  - Default is `vivid`.
+
+## YAML Configuration Example
+
+To create a custom Dall-e-3 image with the desired options, use the following YAML configuration:
+
+```yaml
+service: custom_domain.create_dalle3_image
+data:
+  size: "1024x1792"
+  quality: "hd"
+  style: "natural"
+
+
+
+
+
 ## Service: `create_dalle3_image`
 ### Purpose
 - Generates an image using DALL-E-3 based on the ChatGPT prompt.
@@ -124,11 +157,28 @@ data:
 - Retrieves `chatgpt_out` from `sensor.weathercanvasai_prompts`.
 - Uses this prompt to generate an image via DALL-E-3.
 - Updates the `camera.weathercanvasai_image` entity with the new image URL upon successful generation.
-- Options: Dall-e-3 has more options as Dall-e-2.
-  size: Specifies the size of the generated image. Available options are 1024x1024, 1792x1024, or 1024x1792. Default is 1024x1024.
-  quality: Determines the quality of the image. Choose standard for normal quality or hd for high definition which offers finer details and greater consistency. Default is standard.
-  style: Defines the style of the generated images. Options are vivid for hyper-real and dramatic images or natural for more natural-looking images. Default is vivid.
-- Yaml example:
+
+## Options
+
+Dall-e-3 offers a variety of options to customize the generated images:
+
+- `size`: Specifies the size of the generated image.
+  - Available options are: `1024x1024`, `1792x1024`, or `1024x1792`.
+  - Default is `1024x1024`.
+  
+- `quality`: Determines the quality of the image.
+  - Choose `standard` for normal quality or `hd` for high definition which offers finer details and greater consistency.
+  - Default is `standard`.
+  
+- `style`: Defines the style of the generated images.
+  - Options are `vivid` for hyper-real and dramatic images or `natural` for more natural-looking images.
+  - Default is `vivid`.
+
+## YAML Configuration Example
+
+To create a custom Dall-e-3 image with the desired options, use the following YAML configuration:
+
+```yaml
 service: custom_domain.create_dalle3_image
 data:
   size: "1024x1792"
