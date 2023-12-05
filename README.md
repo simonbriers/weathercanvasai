@@ -95,7 +95,7 @@ The integration offers three services:
 ### Functionality
 - Loads a dummy image URL into the camera entity (`camera.dalle_weather_image`) for testing purposes.
 
-## Service: `create_chatgpt_prompt`
+## Service: `create_chatgpt_prompt` (to be called before attempting to generate an image with Dall-E)
 ### Purpose
 - Creates a ChatGPT prompt combining location, time of day, season, and weather conditions for image generation.
 ### Functionality
@@ -103,20 +103,44 @@ The integration offers three services:
 - Processes `chatgpt_in` to generate `chatgpt_out` for use in DALL-E image generation.
 - Dispatches `chatgpt_out` to update the `sensor.weathercanvasai_prompts`.
 
-## Service: `create_dalle_image`
+## Service: `create_dalle2_image`
 ### Purpose
-- Generates an image using DALL-E based on the ChatGPT prompt.
+- Generates an image using DALL-E-2 based on the ChatGPT prompt.
 ### Functionality
 - Retrieves `chatgpt_out` from `sensor.weathercanvasai_prompts`.
 - Uses this prompt to generate an image via DALL-E.
 - Updates the `camera.weathercanvasai_image` entity with the new image URL upon successful generation.
+- Options:
+  size: Specifies the size of the generated image. Available options are 256x256, 512x512, or 1024x1024. Default is 1024x1024.
+- Yaml example:
+service: custom_domain.create_dalle2_image
+data:
+  size: "512x512"
 
+## Service: `create_dalle3_image`
+### Purpose
+- Generates an image using DALL-E-3 based on the ChatGPT prompt.
+### Functionality
+- Retrieves `chatgpt_out` from `sensor.weathercanvasai_prompts`.
+- Uses this prompt to generate an image via DALL-E-3.
+- Updates the `camera.weathercanvasai_image` entity with the new image URL upon successful generation.
+- Options: Dall-e-3 has more options as Dall-e-2.
+  size: Specifies the size of the generated image. Available options are 1024x1024, 1792x1024, or 1024x1792. Default is 1024x1024.
+  quality: Determines the quality of the image. Choose standard for normal quality or hd for high definition which offers finer details and greater consistency. Default is standard.
+  style: Defines the style of the generated images. Options are vivid for hyper-real and dramatic images or natural for more natural-looking images. Default is vivid.
+- Yaml example:
+service: custom_domain.create_dalle3_image
+data:
+  size: "1024x1792"
+  quality: "hd"
+  style: "natural"
+  
 ## Usage and Integration in UI
 - **Call the service "Weather Canvas AI: create_chatgpt_prompt"** to have ChatGPT pepare a promp based on the season, time of day, weather conditions and location.
 
 ![image](https://github.com/simonbriers/weathercanvasai/assets/101293590/60e24bfe-3276-4475-b269-54ec0fa49072)
 
-- **Call the service "Weather Canvas AI: create_dalle_image"** to send the prompt to Dall-E. The camera entity will be updated with the image. The image will be saved under /config/www 
+- **Call the service "Weather Canvas AI: create_dalle_image (2 or 3) "** to send the prompt to Dall-E. The camera entity will be updated with the image. The image will be saved under /config/www 
 
 - **Generated Image Accessibility**:
   - The last generated image by `camera.weathercanvasai_image` is saved in the Home Assistant configuration directory under `/local`. (This is your /configuration/www directory)
