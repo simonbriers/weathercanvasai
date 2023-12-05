@@ -188,7 +188,7 @@ async def async_create_dalle_prompt(hass: HomeAssistant, chatgpt_in: str, config
 
     return "Error: No response from ChatGPT."
 
-async def generate_dalle2_image(hass, prompt):
+async def generate_dalle2_image(hass, prompt, size):
     """Generate an image using DALL-E and return the accessible URL."""
     
     # Retrieve the OpenAI API key and DALL-E model name from the configuration
@@ -210,7 +210,7 @@ async def generate_dalle2_image(hass, prompt):
         "prompt": prompt,
         "n": 1,
         "model": image_model_name,
-        "size": "1024x1024"
+        "size": size
     }
 
     _LOGGER.debug("Payload for DALL-E API: %s", payload)

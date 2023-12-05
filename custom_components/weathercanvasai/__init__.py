@@ -139,6 +139,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
         # Retrieve the state of the weathercanvasaiPromptsSensor
         sensor_state = hass.states.get(entity_id)
+        # Retrieve additional parameters from the service call
+        size = call.data.get("size", "1024x1024")  # Default to 1024x1024 if not provided
 
         if sensor_state is None:
             _LOGGER.error(f"Entity {entity_id} not found")
@@ -152,7 +154,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             return
 
         try:
-            image_url = await generate_dalle2_image(hass, prompt)
+            image_url = await generate_dalle2_image(hass, prompt, size)
             if image_url:
                 _LOGGER.info(f"DALL-E image generated: {image_url}")
                 # Dispatch the update to the camera with the real image URL
