@@ -67,7 +67,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     hass.data[DOMAIN] = {
         "openai_api_key": config_data["openai_api_key"],
         "gpt_model_name": config_data["gpt_model_name"],
-        "location_name": location_name
+        "location_name": location_name,
+        "max_images_retained": config_data.get("max_images_retained", 5)
     }
 
     _LOGGER.debug(f"{DOMAIN} configuration data set up: {hass.data[DOMAIN]}")
@@ -77,17 +78,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         hass.async_create_task(
             hass.config_entries.async_forward_entry_setup(entry, platform)
         )
-
-    # Define the load_testimage service handler
-    async def handle_load_test_image(call):
-        # Dummy URL for testing
-        dummy_url = "https://via.placeholder.com/300.png?text=Dalle+Test"
-
-        # Dispatch the update to the camera with the dummy URL
-        async_dispatcher_send(hass, "update_weathercanvasai_camera", dummy_url)
-
-    # Register the load_testimage service
-    hass.services.async_register(DOMAIN, 'load_testimage', handle_load_test_image)
 
     # Define the create gpt prompt service handler
     async def create_gpt_prompt_service(call):
@@ -155,11 +145,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         try:
             image_url = await generate_dalle2_image(hass, prompt, size)
             if image_url:
-                _LOGGER.info(f"DALL-E image generated: {image_url}")
+                _LOGGER.info(f"DALL-E-2 image generated: {image_url}")
                 # Dispatch the update to the camera with the real image URL
-                async_dispatcher_send(hass, "update_weathercanvasai_camera", image_url)
+                async_dispatcher_send(hass, "update_weathercanvasai_camera")
             else:
-                _LOGGER.error("Failed to generate DALL-E image or invalid URL received")
+                _LOGGER.error("Failed to generate DALL-E-2 image or invalid URL received")
         except Exception as e:
             _LOGGER.error(f"Error generating DALL-E image: {e}")
 
@@ -193,11 +183,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             image_url = await generate_dalle3_image(hass, prompt, size, quality, style)
 
             if image_url:
-                _LOGGER.info(f"DALL-E image generated: {image_url}")
+                _LOGGER.info(f"DALL-E-3 image generated: {image_url}")
                 # Dispatch the update to the camera with the real image URL
-                async_dispatcher_send(hass, "update_weathercanvasai_camera", image_url)
+                async_dispatcher_send(hass, "update_weathercanvasai_camera")
             else:
-                _LOGGER.error("Failed to generate DALL-E image or invalid URL received")
+                _LOGGER.error("Failed to generate DALL-E-3 image or invalid URL received")
         except Exception as e:
             _LOGGER.error(f"Error generating DALL-E image: {e}")
             

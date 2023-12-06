@@ -52,6 +52,8 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self.openai_api_key = user_input['openai_api_key']
                 self.googlemaps_api_key = user_input['googlemaps_api_key']
                 self.gpt_model_name = user_input['gpt_model_name']
+                self.max_images_retained = user_input['max_images_retained']
+
 
                 # Store the location name in hass.data
                 if self.hass.data.get(DOMAIN) is None:
@@ -65,7 +67,8 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         data_schema = vol.Schema({
             vol.Required('openai_api_key', default="your openai api key here"): str,
             vol.Required('googlemaps_api_key', default="your googlemaps api key here"): str,
-            vol.Optional('gpt_model_name', default='gpt-3.5-turbo'): vol.In(['gpt-3.5-turbo', 'gpt-4'])
+            vol.Optional('gpt_model_name', default='gpt-3.5-turbo'): vol.In(['gpt-3.5-turbo', 'gpt-4']),
+            vol.Required('max_images_retained', default=5): int
         })
 
         # Show the form again with any errors
@@ -86,7 +89,8 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 'openai_api_key': self.openai_api_key,
                 'googlemaps_api_key': self.googlemaps_api_key,
                 'gpt_model_name': self.gpt_model_name,
-                'location_name': user_input.get('location_name', location_name)
+                'location_name': user_input.get('location_name', location_name),
+                'max_images_retained': self.max_images_retained
             }
 
             # Create the configuration entry

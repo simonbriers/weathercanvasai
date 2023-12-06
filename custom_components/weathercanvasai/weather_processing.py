@@ -4,9 +4,11 @@ import datetime
 import asyncio
 import pytz
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
+from homeassistant.helpers.network import get_url
 from geopy.geocoders import Nominatim
 import openai
 import aiohttp
+import aiofiles.os
 import os
 from .const import DOMAIN
 import json
@@ -146,7 +148,26 @@ async def async_get_weather_conditions(hass: HomeAssistant) -> str:
     else:
         _LOGGER.info("Weather data could not be retrieved.")
         return "Be creative about the weather."
-    
+
+async def clean_up_images(directory, max_images):
+    _LOGGER.debug(f"Starting cleanup of images in {directory}. Retaining {max_images} most recent images.")
+    # List all image files in the directory
+    files = [os.path.join(directory, f) for f in os.listdir(directory) if f.endswith('.png')]
+    _LOGGER.debug(f"Found {len(files)} image(s) in the directory.")
+    # Sort files by modification time in ascending order (oldest first)
+    files.sort(key=os.path.getmtime)
+    # Calculate the number of files to remove
+    files_to_remove = len(files) - max_images
+    _LOGGER.debug(f"Preparing to remove {files_to_remove} old image(s).")
+
+    # Remove older files, only keep the 'max_images' most recent files
+    for file in files[:-max_images]:
+        try:
+            await aiofiles.os.remove(file)
+            _LOGGER.debug(f"Removed old image file: {file}")
+        except Exception as e:
+            _LOGGER.error(f"Error removing file {file}: {e}")
+   
 async def async_create_dalle_prompt(hass: HomeAssistant, chatgpt_in: str, config_data: dict) -> str:
     openai_api_key = config_data.get("openai_api_key")
     chatgpt_model = config_data.get("gpt_model_name", 'gpt-3.5-turbo')
@@ -232,10 +253,27 @@ async def generate_dalle2_image(hass, prompt, size):
                                     image_data = await image_response.read()
                                     try:
                                         os.makedirs('/config/www', exist_ok=True)  # Create the directory if it doesn't exist
-                                        with open('/config/www/dalle.png', 'wb') as file:
+                                        # Generate a timestamped filename
+                                        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+                                        filename = f"dalle_{timestamp}.png"
+                                        file_path = f"/config/www/{filename}"
+                                        # Save the image with the timestamped filename
+                                        with open(file_path, 'wb') as file:
                                             file.write(image_data)
-                                        _LOGGER.debug("Image saved as dalle.png in the directory: %s", os.getcwd())
-                                        return image_url  # Return the image URL if saved successfully
+                                            _LOGGER.debug(f"Image saved as {filename} in the directory: /config/www")
+                                            # Convert the file path to a URL accessible within Home Assistant
+                                            local_image_url = f"{get_url(hass, allow_internal=True)}/local/{filename}"
+                                            # Save the image URL in the domain
+                                            hass.data[DOMAIN]['latest_image_url'] = local_image_url
+                                            # Log the URL that was saved to the domain
+                                            _LOGGER.debug(f"Latest image URL saved in domain: {local_image_url}")
+                                            
+                                            # Retrieve the max_images_retained value from your configuration
+                                            max_images_retained = hass.data[DOMAIN].get('max_images_retained', 5)  # Default to 5 if not set
+                                            # Call the function to clean up old images
+                                            await clean_up_images('/config/www', max_images_retained)
+
+                                            return local_image_url
                                     except Exception as e:
                                         _LOGGER.error("Error saving the image: %s", str(e))
                                         return None  # Return None if there's an error
@@ -302,10 +340,26 @@ async def generate_dalle3_image(hass, prompt, size, quality, style):
                                     image_data = await image_response.read()
                                     try:
                                         os.makedirs('/config/www', exist_ok=True)  # Create the directory if it doesn't exist
-                                        with open('/config/www/dalle.png', 'wb') as file:
+                                        # Generate a timestamped filename
+                                        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+                                        filename = f"dalle_{timestamp}.png"
+                                        file_path = f"/config/www/{filename}"
+                                        # Save the image with the timestamped filename
+                                        with open(file_path, 'wb') as file:
                                             file.write(image_data)
-                                        _LOGGER.debug("Image saved as dalle.png in the directory: %s", os.getcwd())
-                                        return image_url  # Return the image URL if saved successfully
+                                            _LOGGER.debug(f"Image saved as {filename} in the directory: /config/www")
+                                            # Convert the file path to a URL accessible within Home Assistant
+                                            local_image_url = f"{get_url(hass, allow_internal=True)}/local/{filename}"
+                                            # Save the image URL in the domain
+                                            hass.data[DOMAIN]['latest_image_url'] = local_image_url
+                                            # Log the URL that was saved to the domain
+                                            _LOGGER.debug(f"Latest image URL saved in domain: {local_image_url}")
+                                            # Retrieve the max_images_retained value from your configuration
+                                            max_images_retained = hass.data[DOMAIN].get('max_images_retained', 5)  # Default to 5 if not set
+                                            # Call the function to clean up old images
+                                            await clean_up_images('/config/www', max_images_retained)
+ 
+                                            return local_image_url
                                     except Exception as e:
                                         _LOGGER.error("Error saving the image: %s", str(e))
                                         return None  # Return None if there's an error
