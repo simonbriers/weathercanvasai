@@ -10,20 +10,21 @@ _LOGGER = logging.getLogger(__name__)
 class weathercanvasaiPromptsSensor(SensorEntity):
     def __init__(self, hass, entry_id, name):
         _LOGGER.info("Initializing weathercanvasaiPromptSensor")
-        self._attr_unique_id = f"{entry_id}_prompts"
-
         """Initialize the sensor."""
         self.hass = hass
         self.entry_id = entry_id
         self._attr_name = name
-        self._attr_unique_id = entry_id  # Use entry_id as the unique ID
         self._state = "Initial State"  # Default state
+        self._attr_unique_id = f"{entry_id}_prompts"
+
         self._attributes = {
             "chatgpt_in": "Initial chatgpt_in",
             "chatgpt_out": "Initial chatgpt_out",
             "last_update": datetime.now().isoformat()
         }
         self._attr_icon = 'mdi:chat'  # Set the icon here
+        _LOGGER.info(f"Initializing weathercanvasaiPeomptsSensor with unique ID: {self._attr_unique_id}")
+
 
     @property
     def name(self):
@@ -59,15 +60,13 @@ class weathercanvasaiPromptsSensor(SensorEntity):
 
 class weathercanvasaiImageSensor(SensorEntity):
     def __init__(self, hass, entry_id, name):
-        self._attr_unique_id = f"{entry_id}_image"
         _LOGGER.info("Initializing weathercanvasaiImageSensor")
-
         """Initialize the image URL sensor."""
         self.hass = hass
         self.entry_id = entry_id
         self._attr_name = name
-        self._attr_unique_id = entry_id
-        self._state = "http://example.com/dummy-image.jpg"  # Set a dummy URL as initial state
+        self._attr_unique_id = f"{entry_id}_image"  # Example unique ID
+        _LOGGER.info(f"Initializing weathercanvasaiImageSensor with unique ID: {self._attr_unique_id}")
 
     @property
     def name(self):
