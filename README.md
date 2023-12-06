@@ -65,7 +65,7 @@ There are two ways to install:
    - `api_key_openweathermap`: Your OpenWeatherMap API key. Used for fetching weather data.
    - `api_key_googlemaps`: Your Google Maps API key. Used for location services.
    - `location_name`: A default or custom location for weather and image context.
-   - `gpt_model_name`: Select between 'gpt-3.5-turbo' or 'gpt-4' for text generation.
+   - number of images to be retained in the local storage. Default set to 5.
   
      The choice of the ChatGPT model is final for your installation. If you want to switch, you need to uninstall and reinstall the integration.
 
@@ -86,13 +86,7 @@ This integration creates two entities and provides three services:
      - `chatgpt_out`: The final prompt sent to the OpenAI API for image generation.
 
 ### Services
-The integration offers three services:
-
-## Service: `load_testimage`
-### Purpose
-- Designed for testing the image handling and updating mechanisms of the integration.
-### Functionality
-- Loads a dummy image URL into the camera entity (`camera.dalle_weather_image`) for testing purposes.
+The integration offers two services:
 
 ## Service: `create_chatgpt_prompt` (to be called before attempting to generate an image with Dall-E)
 ### Purpose
