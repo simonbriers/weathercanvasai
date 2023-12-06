@@ -5,7 +5,7 @@ Home Assistant weather image generator with OpenAI and Dall-E
 
 ## Description
 This custom integration for Home Assistant generates images using DALL-E, driven by prompts constructed from location and weather data. It combines data from Home Assistant, OpenWeatherMap, Googlemaps, and uses the OpenAI API to create unique, contextually relevant images.
-Since the installed openai libary for python is the outdated 0.28, this integration makes direct calls to the latest Openai api endpoints, thus avoiding the python libary installed in HA at this moment. I didn't want the integration to forceupdate the libary to the current 1.3.5, as this would render your installation non standard and would require reinstallation on every update of HA.
+Since the installed openai libary for python is the outdated 0.27, this integration makes direct calls to the latest Openai api endpoints, thus avoiding the python libary installed in HA at this moment. I didn't want the integration to forceupdate the libary to the current 1.3.5, as this would render your installation non standard and would require reinstallation on every update of HA.
 Be aware that there is a small cost involved for the api calls to ChatGPT and to Dall-E. You need an Openai account and an active payment method to be able to use their api. You can choose the model you want during setup. The tokens sent to ChatGPT are limited, the cost is negligable. To fetch a Dalle-3 image, they cost at the moment € 0.04, for Dale-2 € 0.02 per call. The difference in quality is huge however. Api calls are only made by services, up to you if you do this manually or in an automations once every ... . Every hour during night and day would be 24 calls and cost € 1 per day. Be aware, that's € 30 per month ! 1 picture per day comes down to € 1.25 per month. You have been warned ! I have a version that makes an api call to a local automatic1111 server, but this relies on that server running nonstop in you homenetwork. If someone is aware of a free Stable diffusion service, I will test and provide another version.
 
 ## Features
@@ -32,26 +32,26 @@ There are two ways to install:
    - In HACS, click on integrations, then click the 3 dots in the top right corner
    - From the dropdown menu, choose "Custom Repositories"
    - Enter https://github.com/simonbriers/weathercanvasai as repository and choose integration for the second field.
-   - 
+     
   ![image](https://github.com/simonbriers/weathercanvasai/assets/101293590/20378c3f-911c-49b1-a5ff-4ebd5afc30c6)
 
    - In the next windows, click on Weather Canvas AI (left of the bin)
-   - 
+     
   ![image](https://github.com/simonbriers/weathercanvasai/assets/101293590/034d65a3-8143-4f30-a5e5-3371b50f570b)
 
    - This readme will open, click on download in the down-right corner
-   - 
+     
   ![image](https://github.com/simonbriers/weathercanvasai/assets/101293590/2fade912-d63d-42cf-bf19-4373cad06ae3)
 
    - confirm the downloas and restart HA
     
    - In your main HA menu, go to Settings - Devices and services and choose "+ Add integration"
    - In the search field, enter "Weather Canvas AI"
-   - 
+     
   ![image](https://github.com/simonbriers/weathercanvasai/assets/101293590/1f51eff3-1686-4370-a515-a819ca113ca2)
 
    - you should now arrive in the configuration menu
-   - 
+     
   ![image](https://github.com/simonbriers/weathercanvasai/assets/101293590/46992dce-6ebd-400c-8fb1-779b52cb7535)
 
 ## Configuration
@@ -65,10 +65,9 @@ There are two ways to install:
    - `api_key_openweathermap`: Your OpenWeatherMap API key. Used for fetching weather data.
    - `api_key_googlemaps`: Your Google Maps API key. Used for location services.
    - `location_name`: A default or custom location for weather and image context.
-   - `image_model_name`: Choice between 'dall-e-2' and 'dall-e-3' for image generation.
    - `gpt_model_name`: Select between 'gpt-3.5-turbo' or 'gpt-4' for text generation.
   
-     The choice of the ChatGPT and Dalle models is final for your installation. If you want to switch, you need to uninstall and reinstall the integration.
+     The choice of the ChatGPT model is final for your installation. If you want to switch, you need to uninstall and reinstall the integration.
 
 ## Entities and Services
 This integration creates two entities and provides three services:
