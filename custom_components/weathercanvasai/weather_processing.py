@@ -15,9 +15,7 @@ import json
 
 _LOGGER = logging.getLogger(__name__)
 
-async def generate_weather_prompt(hass, entity_id):
-    weather_data = hass.states.get(entity_id).attributes # Fetch Met.no weather data
-    
+  
 def get_season(now):
     month = now.month
     if 3 <= month <= 5:
@@ -114,7 +112,8 @@ async def async_calculate_day_segment(hass: HomeAssistant) -> str:
 async def async_get_weather_conditions(hass: HomeAssistant) -> str:
     # Get the state of the weather entity
     weather_data = hass.states.get('weather.forecast_home')
-
+    _LOGGER.debug("Weather Data %s", weather_data)
+    
     if weather_data:
         # Extract required attributes
         temperature = weather_data.attributes.get('temperature')
