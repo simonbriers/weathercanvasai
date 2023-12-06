@@ -52,7 +52,6 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self.openai_api_key = user_input['openai_api_key']
                 self.googlemaps_api_key = user_input['googlemaps_api_key']
                 self.gpt_model_name = user_input['gpt_model_name']
-                self.image_model_name = user_input['image_model_name']
 
                 # Store the location name in hass.data
                 if self.hass.data.get(DOMAIN) is None:
@@ -66,8 +65,7 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         data_schema = vol.Schema({
             vol.Required('openai_api_key', default="your openai api key here"): str,
             vol.Required('googlemaps_api_key', default="your googlemaps api key here"): str,
-            vol.Optional('gpt_model_name', default='gpt-3.5-turbo'): vol.In(['gpt-3.5-turbo', 'gpt-4']),
-            vol.Optional('image_model_name', default='dall-e-2'): vol.In(['dall-e-2', 'dall-e-3']),
+            vol.Optional('gpt_model_name', default='gpt-3.5-turbo'): vol.In(['gpt-3.5-turbo', 'gpt-4'])
         })
 
         # Show the form again with any errors
@@ -88,7 +86,6 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 'openai_api_key': self.openai_api_key,
                 'googlemaps_api_key': self.googlemaps_api_key,
                 'gpt_model_name': self.gpt_model_name,
-                'image_model_name': self.image_model_name,
                 'location_name': user_input.get('location_name', location_name)
             }
 
@@ -176,9 +173,6 @@ class WeatherImageGeneratorOptionsFlowHandler(config_entries.OptionsFlow):
             vol.Optional('gpt_model_name', 
                          default=self.config_entry.options.get('gpt_model_name', 'gpt-3.5-turbo')): 
                          vol.In(['gpt-3.5-turbo', 'gpt-4']),
-            vol.Optional('image_model_name', 
-                         default=self.config_entry.options.get('image_model_name', 'dall-e-2')): 
-                         vol.In(['dall-e-2', 'dall-e-3'])
         }
 
         return self.async_show_form(step_id="init", data_schema=vol.Schema(options))

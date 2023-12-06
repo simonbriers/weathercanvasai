@@ -66,7 +66,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # Store the configuration data in hass.data for the domain
     hass.data[DOMAIN] = {
         "openai_api_key": config_data["openai_api_key"],
-        "image_model_name": config_data["image_model_name"],
         "gpt_model_name": config_data["gpt_model_name"],
         "location_name": location_name
     }
