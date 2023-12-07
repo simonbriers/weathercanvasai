@@ -5,7 +5,8 @@ import asyncio
 import pytz
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
 from homeassistant.helpers.network import get_url
-from geopy.geocoders import Nominatim
+from homeassistant.helpers.dispatcher import dispatcher_send
+
 import openai
 import aiohttp
 import aiofiles.os
@@ -267,7 +268,8 @@ async def generate_dalle2_image(hass, prompt, size):
                                             hass.data[DOMAIN]['latest_image_url'] = local_image_url
                                             # Log the URL that was saved to the domain
                                             _LOGGER.debug(f"Latest image URL saved in domain: {local_image_url}")
-                                            
+                                            # Send a dispatcher signal to notify that the image URL has been updated
+                                            dispatcher_send(hass, "update_weathercanvasai_image_sensor")
                                             # Retrieve the max_images_retained value from your configuration
                                             max_images_retained = hass.data[DOMAIN].get('max_images_retained', 5)  # Default to 5 if not set
                                             # Call the function to clean up old images
@@ -354,6 +356,8 @@ async def generate_dalle3_image(hass, prompt, size, quality, style):
                                             hass.data[DOMAIN]['latest_image_url'] = local_image_url
                                             # Log the URL that was saved to the domain
                                             _LOGGER.debug(f"Latest image URL saved in domain: {local_image_url}")
+                                            # Send a dispatcher signal to notify that the image URL has been updated
+                                            dispatcher_send(hass, "update_weathercanvasai_image_sensor")
                                             # Retrieve the max_images_retained value from your configuration
                                             max_images_retained = hass.data[DOMAIN].get('max_images_retained', 5)  # Default to 5 if not set
                                             # Call the function to clean up old images

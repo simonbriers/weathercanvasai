@@ -60,13 +60,12 @@ class weathercanvasaiPromptsSensor(SensorEntity):
 
 class weathercanvasaiImageSensor(SensorEntity):
     def __init__(self, hass, entry_id, name):
-        #_LOGGER.info("Initializing weathercanvasaiImageSensor")
         """Initialize the image URL sensor."""
         self.hass = hass
         self.entry_id = entry_id
         self._attr_name = name
-        self._attr_unique_id = f"{entry_id}_image"  # Example unique ID
-        #_LOGGER.info(f"Initializing weathercanvasaiImageSensor with unique ID: {self._attr_unique_id}")
+        self._attr_unique_id = f"{entry_id}_image"
+        self._state = None
 
     @property
     def name(self):
@@ -79,16 +78,23 @@ class weathercanvasaiImageSensor(SensorEntity):
         return self._state
 
     async def async_added_to_hass(self):
-        """Register callbacks when entity is added."""
-        self._state = self.hass.data[DOMAIN].get('latest_image_url')
+        """Handle entity which will be added to Home Assistant."""
+        async def update_state():
+            # Retrieve the latest_image_url from DOMAIN
+            self._state = self.hass.data[DOMAIN].get('latest_image_url', None)
+            self.async_write_ha_state()
 
-    async def _update_sensor(self):
-        """Update the sensor state (image URL)."""
-        self._state = self.hass.data[DOMAIN].get('latest_image_url')
-        self.async_write_ha_state()
+        # Set up a listener for dispatcher signal
+        self.async_on_remove(
+            async_dispatcher_connect(
+                self.hass, 
+                "update_weathercanvasai_image_sensor", 
+                update_state
+            )
+        )
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the sensors upon entry setup."""
     prompts_sensor = weathercanvasaiPromptsSensor(hass, config_entry.entry_id, "weathercanvasai Prompts")
-    image_sensor = weathercanvasaiImageSensor(hass, config_entry.entry_id, "weathercanvasai Image") 
+    image_sensor = weathercanvasaiImageSensor(hass, config_entry.entry_id, "weathercanvasai Image")
     async_add_entities([prompts_sensor, image_sensor])
