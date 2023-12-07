@@ -172,6 +172,7 @@ async def clean_up_images(directory, max_images):
 async def async_create_dalle_prompt(hass: HomeAssistant, chatgpt_in: str, config_data: dict) -> str:
     openai_api_key = config_data.get("openai_api_key")
     chatgpt_model = config_data.get("gpt_model_name", 'gpt-3.5-turbo')
+    system_instruction = config_data.get("system_instruction")
     
     # Check if OpenAI API key is available
     if not openai_api_key:
@@ -179,7 +180,7 @@ async def async_create_dalle_prompt(hass: HomeAssistant, chatgpt_in: str, config
         return "Error: OpenAI API key is not configured."
 
     # System instruction for DALL-E prompt creation
-    system_instruction = "Create a succinct DALL-E prompt under 100 words, that will create an artistic image, focusing on the most visually striking aspects of the given city/region, weather, and time of day. Highlight key elements that define the scene's character, such as specific landmarks, weather effects, folkore or cultural features, in a direct and vivid manner. Avoid elaborate descriptions; instead, aim for a prompt that vividly captures the essence of the scene in a concise format, suitable for generating a distinct and compelling image."
+    # system_instruction = "Create a succinct DALL-E prompt under 100 words, that will create an artistic image, focusing on the most visually striking aspects of the given city/region, weather, and time of day. Highlight key elements that define the scene's character, such as specific landmarks, weather effects, folkore or cultural features, in a direct and vivid manner. Avoid elaborate descriptions; instead, aim for a prompt that vividly captures the essence of the scene in a concise format, suitable for generating a distinct and compelling image."
 
     def make_api_call():
         openai.api_key = openai_api_key

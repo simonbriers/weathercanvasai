@@ -68,7 +68,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         "openai_api_key": config_data["openai_api_key"],
         "gpt_model_name": config_data["gpt_model_name"],
         "location_name": location_name,
-        "max_images_retained": config_data.get("max_images_retained", 5)
+        "max_images_retained": config_data.get("max_images_retained", 5),
+        "system_instruction": config_data.get("system_instruction")
     }
 
     _LOGGER.debug(f"{DOMAIN} configuration data set up: {hass.data[DOMAIN]}")

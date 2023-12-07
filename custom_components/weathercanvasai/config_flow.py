@@ -53,7 +53,7 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self.googlemaps_api_key = user_input['googlemaps_api_key']
                 self.gpt_model_name = user_input['gpt_model_name']
                 self.max_images_retained = user_input['max_images_retained']
-
+                self.system_instruction = user_input['system_instruction']
 
                 # Store the location name in hass.data
                 if self.hass.data.get(DOMAIN) is None:
@@ -68,8 +68,9 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             vol.Required('openai_api_key', default="your openai api key here"): str,
             vol.Required('googlemaps_api_key', default="your googlemaps api key here"): str,
             vol.Optional('gpt_model_name', default='gpt-3.5-turbo'): vol.In(['gpt-3.5-turbo', 'gpt-4']),
-            vol.Required('max_images_retained', default=5): int
-        })
+            vol.Required('max_images_retained', default=5): int,
+            vol.Required('system_instruction', default="Create a succinct DALL-E prompt under 100 words, that will create an artistic image, focusing on the most visually striking aspects of the given city/region, weather, and time of day. Highlight key elements that define the scene's character, such as specific landmarks, weather effects, folkore or cultural features, in a direct and vivid manner. Avoid elaborate descriptions; instead, aim for a prompt that vividly captures the essence of the scene in a concise format, suitable for generating a distinct and compelling image."): str
+            })
 
         # Show the form again with any errors
         return self.async_show_form(
@@ -90,7 +91,8 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 'googlemaps_api_key': self.googlemaps_api_key,
                 'gpt_model_name': self.gpt_model_name,
                 'location_name': user_input.get('location_name', location_name),
-                'max_images_retained': self.max_images_retained
+                'max_images_retained': self.max_images_retained,
+                'system_instruction': self.system_instruction
             }
 
             # Create the configuration entry
