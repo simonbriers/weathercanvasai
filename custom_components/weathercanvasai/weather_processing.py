@@ -233,7 +233,7 @@ async def generate_dalle2_image(hass, prompt, size):
         "size": size
     }
 
-    _LOGGER.debug("Payload for DALL-E API: %s", payload)
+    _LOGGER.debug("Payload for DALL-E-2 API: %s", payload)
 
     # Make the POST request to OpenAI API
     async with aiohttp.ClientSession() as session:
@@ -263,19 +263,21 @@ async def generate_dalle2_image(hass, prompt, size):
                                             file.write(image_data)
                                             _LOGGER.debug(f"Image saved as {filename} in the directory: /config/www")
                                             # Convert the file path to a URL accessible within Home Assistant
-                                            local_image_url = f"{get_url(hass, allow_internal=True)}/local/{filename}"
-                                            # Save the image URL in the domain
-                                            hass.data[DOMAIN]['latest_image_url'] = local_image_url
-                                            # Log the URL that was saved to the domain
-                                            _LOGGER.debug(f"Latest image URL saved in domain: {local_image_url}")
+                                            # Full URL
+                                            full_image_url = f"{get_url(hass, allow_internal=True)}/local/{filename}"
+                                            hass.data[DOMAIN]['latest_image_full_url'] = full_image_url
+                                            _LOGGER.debug(f"Latest full image URL saved in domain: {full_image_url}")
+                                            # Local path
+                                            local_image_path = f"/local/{filename}"
+                                            hass.data[DOMAIN]['latest_image_local_path'] = local_image_path
+                                            _LOGGER.debug(f"Latest local image path saved in domain: {local_image_path}")
                                             # Send a dispatcher signal to notify that the image URL has been updated
                                             dispatcher_send(hass, "update_weathercanvasai_image_sensor")
                                             # Retrieve the max_images_retained value from your configuration
                                             max_images_retained = hass.data[DOMAIN].get('max_images_retained', 5)  # Default to 5 if not set
                                             # Call the function to clean up old images
                                             await clean_up_images('/config/www', max_images_retained)
-
-                                            return local_image_url
+                                            return full_image_url
                                     except Exception as e:
                                         _LOGGER.error("Error saving the image: %s", str(e))
                                         return None  # Return None if there's an error
@@ -351,19 +353,21 @@ async def generate_dalle3_image(hass, prompt, size, quality, style):
                                             file.write(image_data)
                                             _LOGGER.debug(f"Image saved as {filename} in the directory: /config/www")
                                             # Convert the file path to a URL accessible within Home Assistant
-                                            local_image_url = f"{get_url(hass, allow_internal=True)}/local/{filename}"
-                                            # Save the image URL in the domain
-                                            hass.data[DOMAIN]['latest_image_url'] = local_image_url
+                                            # Full URL
+                                            full_image_url = f"{get_url(hass, allow_internal=True)}/local/{filename}"
+                                            hass.data[DOMAIN]['latest_image_full_url'] = full_image_url
+                                            # Local path
+                                            local_image_path = f"/local/{filename}"
+                                            hass.data[DOMAIN]['latest_image_local_path'] = local_image_path
                                             # Log the URL that was saved to the domain
-                                            _LOGGER.debug(f"Latest image URL saved in domain: {local_image_url}")
+                                            _LOGGER.debug(f"Latest image URL saved in domain: {full_image_url}")
                                             # Send a dispatcher signal to notify that the image URL has been updated
                                             dispatcher_send(hass, "update_weathercanvasai_image_sensor")
                                             # Retrieve the max_images_retained value from your configuration
                                             max_images_retained = hass.data[DOMAIN].get('max_images_retained', 5)  # Default to 5 if not set
                                             # Call the function to clean up old images
                                             await clean_up_images('/config/www', max_images_retained)
- 
-                                            return local_image_url
+                                            return full_image_url
                                     except Exception as e:
                                         _LOGGER.error("Error saving the image: %s", str(e))
                                         return None  # Return None if there's an error

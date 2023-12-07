@@ -81,7 +81,7 @@ class weathercanvasaiImageSensor(SensorEntity):
         """Handle entity which will be added to Home Assistant."""
         async def update_state():
             # Retrieve the latest_image_url from DOMAIN
-            self._state = self.hass.data[DOMAIN].get('latest_image_url', None)
+            self._state = self.hass.data[DOMAIN].get('latest_image_local_path', None)
             self.async_write_ha_state()
 
         # Set up a listener for dispatcher signal

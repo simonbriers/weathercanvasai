@@ -40,6 +40,7 @@ class weathercanvasaiCamera(Camera):
     async def async_camera_image(self, width=None, height=None):
         """Return the image of this camera in bytes."""
         _LOGGER.debug("Fetching camera image.")
+        _LOGGER.debug("Current image URL: %s", self._image_url)
         if self._image_url:
             # Use Home Assistant's aiohttp_client session for HTTP requests
             session = async_get_clientsession(self.hass)
@@ -72,7 +73,7 @@ class weathercanvasaiCamera(Camera):
 
     async def _update_image_url(self):
         # Fetch the latest image URL from the domain
-        self._image_url = self.hass.data[DOMAIN].get('latest_image_url')
+        self._image_url = self.hass.data[DOMAIN].get('latest_image_full_url')
         _LOGGER.debug(f"Camera image URL updated: {self._image_url}")
 
     def camera_image(self):
