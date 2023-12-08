@@ -53,7 +53,7 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self.googlemaps_api_key = user_input['googlemaps_api_key']
                 self.gpt_model_name = user_input['gpt_model_name']
                 self.max_images_retained = user_input['max_images_retained']
-                self.system_instruction = user_input['system_instruction']
+                self.system_instruction = self.create_system_instruction(user_input)
 
                 # Store the location name in hass.data
                 if self.hass.data.get(DOMAIN) is None:
@@ -62,15 +62,24 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
                 # Proceed to the location step
                 return await self.async_step_location()
-            
-        # Initial form for API keys and model choices
+
+        # Initial form for API keys, chatgpmodel, number of images to be retained, ChatGP instructions
         data_schema = vol.Schema({
-            vol.Required('openai_api_key', default="your openai api key here"): str,
-            vol.Required('googlemaps_api_key', default="your googlemaps api key here"): str,
+            vol.Required('openai_api_key', default="Enter your OpenAI API key"): str,
+            vol.Required('googlemaps_api_key', default="Enter your Google Maps API key"): str,
             vol.Optional('gpt_model_name', default='gpt-3.5-turbo'): vol.In(['gpt-3.5-turbo', 'gpt-4']),
             vol.Required('max_images_retained', default=5): int,
-            vol.Required('system_instruction', default="Create a succinct DALL-E prompt under 100 words, that will create an artistic image, focusing on the most visually striking aspects of the given city/region, weather, and time of day. Highlight key elements that define the scene's character, such as specific landmarks, weather effects, folkore or cultural features, in a direct and vivid manner. Avoid elaborate descriptions; instead, aim for a prompt that vividly captures the essence of the scene in a concise format, suitable for generating a distinct and compelling image."): str
-            })
+            vol.Required('prompt_structure', default="Create a short narrative of maximum 200 words around the location, weather, and time, focusing on evoking a strong visual image. An AI will use it to create an image."): str,
+            vol.Required('location_aspect', default="Describe the location in a way that highlights its unique beauty and character."): str,
+            vol.Required('weather_description', default="Incorporate the weather into the narrative to enhance the mood of the scene."): str,
+            vol.Required('time_of_day_effect', default="Use the time of day description to add dynamism to the lighting and atmosphere."): str,
+            vol.Required('artistic_direction', default="Choose an artistic style that best conveys the scene's emotion and theme."): str,
+            vol.Required('color_scheme', default="Select a color palette that complements the overall mood and setting."): str,
+            vol.Required('distinct_elements', default="Emphasize any prominent features or landmarks that add significance to the image."): str,
+            vol.Required('cultural_hints', default="Integrate cultural elements to enrich the story behind the image. If possible, use seasonal elements"): str,
+            vol.Required('prompt_precision', default="Be precise and brief in your descriptions to guide the AI in creating a detailed and coherent image. Use captivating but as little words as possible."): str,
+            vol.Required('visual_goal', default="Aim to capture the essence of the scene in a way that resonates emotionally with the viewer."): str
+        })
 
         # Show the form again with any errors
         return self.async_show_form(
@@ -165,6 +174,22 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         parts = [locality, province, region, country]
         location_name = ', '.join(filter(None, parts))
         return location_name
+
+    def create_system_instruction(self, user_input):
+        # Concatenate the individual fields to form the system instruction.
+        parts = [
+            user_input.get('prompt_structure', ''),
+            user_input.get('location_aspect', ''),
+            user_input.get('weather_description', ''),
+            user_input.get('time_of_day_effect', ''),
+            user_input.get('artistic_direction', ''),
+            user_input.get('color_scheme', ''),
+            user_input.get('distinct_elements', ''),
+            user_input.get('cultural_hints', ''),
+            user_input.get('prompt_precision', ''),
+            user_input.get('visual_goal', '')
+        ]
+        return ' '.join(filter(None, parts))
 
 class WeatherImageGeneratorOptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry):
