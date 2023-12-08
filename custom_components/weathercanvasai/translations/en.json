@@ -1,24 +1,34 @@
 {
-    "config": {
-      "title": "Weather Canvas AI",
-      "step": {
-        "user": {
-          "description": "Configure your API keys and preferences for the Weather Image Generator.",
-          "data": {
-            "openai_api_key": "OpenAI API Key",
-            "googlemaps_api_key": "Google Maps API Key"
-          }
+  "config": {
+    "title": "Weather Canvas AI",
+    "step": {
+      "user": {
+        "description": "Configure your API keys and preferences for the Weather Image Generator.",
+        "data": {
+          "openai_api_key": "OpenAI API Key",
+          "googlemaps_api_key": "Google Maps API Key",
+          "gpt_model_name": "Choose the GPT model version.",
+          "max_images_retained": "Maximum number of images to retain.",
+          "prompt_structure": "Narrative structure for the prompt.",
+          "location_aspect": "Significance of the location in the image.",
+          "weather_description": "Weather conditions to include in the image.",
+          "time_of_day_effect": "Effect of the time of day on the image.",
+          "artistic_direction": "Artistic style to be applied to the image.",
+          "color_scheme": "Color scheme for the image.",
+          "distinct_elements": "Key elements and landmarks to feature.",
+          "cultural_hints": "Cultural or seasonal elements to incorporate.",
+          "prompt_precision": "Precision and clarity of the prompt.",
+          "visual_goal": "Intended visual and emotional impact of the image."
         }
-      },
-      "error": {
-        "cannot_connect": "Cannot connect to the API.",
-        "invalid_auth": "Invalid authentication credentials.",
-        "single_instance_allowed": "An instance of this integration is already configured. Only one instance is allowed."
-      },
-      "abort": {
-        "already_configured": "Device is already configured."
       }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to the API.",
+      "invalid_auth": "Invalid authentication credentials.",
+      "single_instance_allowed": "Only one instance of this integration is allowed."
+    },
+    "abort": {
+      "already_configured": "This device is already configured."
     }
   }
-  
-  
+}
