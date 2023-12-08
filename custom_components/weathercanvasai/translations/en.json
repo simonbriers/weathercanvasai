@@ -1,24 +1,25 @@
 {
-    "config": {
-      "title": "Weather Canvas AI",
-      "step": {
-        "user": {
-          "description": "Configure your API keys and preferences for the Weather Image Generator.",
-          "data": {
-            "openai_api_key": "OpenAI API Key",
-            "googlemaps_api_key": "Google Maps API Key"
-          }
+  "config": {
+    "title": "Weather Canvas AI",
+    "step": {
+      "user": {
+        "description": "Configure your API keys and preferences for the Weather Image Generator.",
+        "data": {
+          "openai_api_key": "Your OpenAI API key for authentication.",
+          "googlemaps_api_key": "Your Google Maps API key for location services.",
+          "gpt_model_name": "Select the version of the GPT model to use for generating prompts.",
+          "max_images_retained": "Specify the maximum number of images to retain in the system.",
+          "system_instruction": "Provide instructions to generate a DALL-E prompt based on location, weather, and time."
         }
-      },
-      "error": {
-        "cannot_connect": "Cannot connect to the API.",
-        "invalid_auth": "Invalid authentication credentials.",
-        "single_instance_allowed": "An instance of this integration is already configured. Only one instance is allowed."
-      },
-      "abort": {
-        "already_configured": "Device is already configured."
       }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to the API.",
+      "invalid_auth": "Invalid authentication credentials.",
+      "single_instance_allowed": "Only one instance of this integration is allowed."
+    },
+    "abort": {
+      "already_configured": "This device is already configured."
     }
   }
-  
-  
+}
