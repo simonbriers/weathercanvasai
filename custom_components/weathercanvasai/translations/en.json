@@ -7,7 +7,6 @@
         "data": {
           "openai_api_key": "OpenAI API Key",
           "googlemaps_api_key": "Google Maps API Key",
-          "gpt_model_name": "Choose the GPT model version.",
           "max_images_retained": "Maximum number of images to retain.",
           "prompt_structure": "Narrative structure for the prompt.",
           "location_aspect": "Significance of the location in the image.",
@@ -18,7 +17,8 @@
           "distinct_elements": "Key elements and landmarks to feature.",
           "cultural_hints": "Cultural or seasonal elements to incorporate.",
           "prompt_precision": "Precision and clarity of the prompt.",
-          "visual_goal": "Intended visual and emotional impact of the image."
+          "visual_goal": "Intended visual and emotional impact of the image.",
+          "gpt_model_name": "Choose the GPT model version."
         }
       }
     },

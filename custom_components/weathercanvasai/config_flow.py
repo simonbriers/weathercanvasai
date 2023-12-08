@@ -11,10 +11,8 @@ import json
 
 _LOGGER = logging.getLogger(__name__)
 
-
 class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
-
   
     def __init__(self):
         """Initialize the config flow."""
@@ -67,7 +65,6 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         data_schema = vol.Schema({
             vol.Required('openai_api_key', default="Enter your OpenAI API key"): str,
             vol.Required('googlemaps_api_key', default="Enter your Google Maps API key"): str,
-            vol.Optional('gpt_model_name', default='gpt-3.5-turbo'): vol.In(['gpt-3.5-turbo', 'gpt-4']),
             vol.Required('max_images_retained', default=5): int,
             vol.Required('prompt_structure', default="Create a short narrative of maximum 200 words around the location, weather, and time, focusing on evoking a strong visual image. An AI will use it to create an image."): str,
             vol.Required('location_aspect', default="Describe the location in a way that highlights its unique beauty and character."): str,
@@ -78,7 +75,9 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             vol.Required('distinct_elements', default="Emphasize any prominent features or landmarks that add significance to the image."): str,
             vol.Required('cultural_hints', default="Integrate cultural elements to enrich the story behind the image. If possible, use seasonal elements"): str,
             vol.Required('prompt_precision', default="Be precise and brief in your descriptions to guide the AI in creating a detailed and coherent image. Use captivating but as little words as possible."): str,
-            vol.Required('visual_goal', default="Aim to capture the essence of the scene in a way that resonates emotionally with the viewer."): str
+            vol.Required('visual_goal', default="Aim to capture the essence of the scene in a way that resonates emotionally with the viewer."): str,
+            vol.Required('gpt_model_name', default='gpt-3.5-turbo'): vol.In(['gpt-3.5-turbo', 'gpt-4'])
+
         })
 
         # Show the form again with any errors
