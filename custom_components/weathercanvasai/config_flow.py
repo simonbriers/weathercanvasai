@@ -77,7 +77,6 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             vol.Required('prompt_precision', default="Be precise and brief in your descriptions to guide the AI in creating a detailed and coherent image. Use captivating but as little words as possible."): str,
             vol.Required('visual_goal', default="Aim to capture the essence of the scene in a way that resonates emotionally with the viewer."): str,
             vol.Required('gpt_model_name', default='gpt-3.5-turbo'): vol.In(['gpt-3.5-turbo', 'gpt-4'])
-
         })
 
         # Show the form again with any errors
