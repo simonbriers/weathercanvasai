@@ -1,6 +1,3 @@
-
-
-
 import logging
 import datetime
 from homeassistant.core import HomeAssistant

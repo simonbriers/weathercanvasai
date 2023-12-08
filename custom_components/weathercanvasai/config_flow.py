@@ -62,7 +62,7 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
                 # Proceed to the location step
                 return await self.async_step_location()
-
+            
         # Initial form for API keys and model choices
         data_schema = vol.Schema({
             vol.Required('openai_api_key', default="your openai api key here"): str,
