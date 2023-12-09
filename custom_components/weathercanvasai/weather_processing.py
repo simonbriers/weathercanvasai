@@ -168,7 +168,7 @@ async def clean_up_images(directory, max_images):
             _LOGGER.debug(f"Removed old image file: {file}")
         except Exception as e:
             _LOGGER.error(f"Error removing file {file}: {e}")
-   
+
 async def async_create_dalle_prompt(hass: HomeAssistant, chatgpt_in: str, config_data: dict) -> str:
     openai_api_key = config_data.get("openai_api_key")
     chatgpt_model = config_data.get("gpt_model_name", 'gpt-3.5-turbo')
@@ -211,111 +211,17 @@ async def async_create_dalle_prompt(hass: HomeAssistant, chatgpt_in: str, config
     return "Error: No response from ChatGPT."
 
 async def generate_dalle2_image(hass, prompt, size):
-    """Generate an image using DALL-E and return the accessible URL."""
-    
-    # Retrieve the OpenAI API key and DALL-E model name from the configuration
-    config_data = hass.data[DOMAIN]
-    openai_api_key = config_data['openai_api_key']
-
-    # Endpoint
-    openai_url = "https://api.openai.com/v1/images/generations"
-    
-    # Headers
-    headers = {
-        "Authorization": f"Bearer {openai_api_key}",
-        "Content-Type": "application/json"
-    }
-    
-    # Payload
+    # Payload for Dalle-2
     payload = {
         "prompt": prompt,
         "n": 1,
         "model": "dall-e-2",
         "size": size
     }
-
-    _LOGGER.debug("Payload for DALL-E-2 API: %s", payload)
-
-    # Make the POST request to OpenAI API
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.post(openai_url, json=payload, headers=headers) as response:
-                _LOGGER.debug("Received response status: %s", response.status)
-                response_text = await response.text()
-                _LOGGER.debug("Received response text: %s", response_text)
-                if response.status == 200:
-                    result = await response.json()
-                    # Check if 'data' is present in the response and it is not empty
-                    if 'data' in result and result['data']:
-                        # Extract the image URL directly from the data array
-                        image_url = result['data'][0].get('url')
-                        if image_url:
-                            async with session.get(image_url) as image_response:
-                                if image_response.status == 200:
-                                    image_data = await image_response.read()
-                                    try:
-                                        os.makedirs('/config/www', exist_ok=True)  # Create the directory if it doesn't exist
-                                        # Generate a timestamped filename
-                                        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-                                        filename = f"dalle_{timestamp}.png"
-                                        file_path = f"/config/www/{filename}"
-                                        # Save the image with the timestamped filename
-                                        with open(file_path, 'wb') as file:
-                                            file.write(image_data)
-                                            _LOGGER.debug(f"Image saved as {filename} in the directory: /config/www")
-                                            # Convert the file path to a URL accessible within Home Assistant
-                                            # Full URL
-                                            full_image_url = f"{get_url(hass, allow_internal=True)}/local/{filename}"
-                                            hass.data[DOMAIN]['latest_image_full_url'] = full_image_url
-                                            _LOGGER.debug(f"Latest full image URL saved in domain: {full_image_url}")
-                                            # Local path
-                                            local_image_path = f"/local/{filename}"
-                                            hass.data[DOMAIN]['latest_image_local_path'] = local_image_path
-                                            _LOGGER.debug(f"Latest local image path saved in domain: {local_image_path}")
-                                            # Send a dispatcher signal to notify that the image URL has been updated
-                                            dispatcher_send(hass, "update_weathercanvasai_image_sensor")
-                                            # Retrieve the max_images_retained value from your configuration
-                                            max_images_retained = hass.data[DOMAIN].get('max_images_retained', 5)  # Default to 5 if not set
-                                            # Call the function to clean up old images
-                                            await clean_up_images('/config/www', max_images_retained)
-                                            return full_image_url
-                                    except Exception as e:
-                                        _LOGGER.error("Error saving the image: %s", str(e))
-                                        return None  # Return None if there's an error
-                                else:
-                                    _LOGGER.error("Failed to download image: %s", image_response.status)
-                                    return None  # Return None if the image download failed
-                        else:
-                            _LOGGER.error("No 'url' key in the response data.")
-                            return None
-                    else:
-                        _LOGGER.error("The 'data' key is missing or empty in the response.")
-                        return None
-                else:
-                    _LOGGER.error("Failed to generate image with DALL-E: %s", response.status)
-                    return None
-        except Exception as e:
-            _LOGGER.error("Exception occurred while generating image with DALL-E: %s", str(e))
-            return None
+    return await post_request_and_save_image(hass, payload)
 
 async def generate_dalle3_image(hass, prompt, size, quality, style):
-
-    """Generate an image using DALL-E and return the accessible URL."""
-    
-    # Retrieve the OpenAI API key and DALL-E model name from the configuration
-    config_data = hass.data[DOMAIN]
-    openai_api_key = config_data['openai_api_key']
-    
-    # Endpoint
-    openai_url = "https://api.openai.com/v1/images/generations"
-    
-    # Headers
-    headers = {
-        "Authorization": f"Bearer {openai_api_key}",
-        "Content-Type": "application/json"
-    }
-    
-    # Payload
+    # Payload for Dalle-3
     payload = {
         "prompt": prompt,
         "n": 1,
@@ -324,66 +230,78 @@ async def generate_dalle3_image(hass, prompt, size, quality, style):
         "quality": quality,
         "style": style
     }
-    _LOGGER.debug("Payload for DALL-E-3 API: %s", payload)
+    return await post_request_and_save_image(hass, payload)
 
-    # Make the POST request to OpenAI API
+async def post_request_and_save_image(hass, payload):
+    # Retrieve the OpenAI API key from the configuration
+    config_data = hass.data[DOMAIN]
+    openai_api_key = config_data['openai_api_key']
+    # Endpoint
+    openai_url = "https://api.openai.com/v1/images/generations"
+    # Headers
+    headers = {
+        "Authorization": f"Bearer {openai_api_key}",
+        "Content-Type": "application/json"
+    }
+    _LOGGER.debug("Payload for DALL-E API: %s", payload)
+
     async with aiohttp.ClientSession() as session:
-        try:
-            async with session.post(openai_url, json=payload, headers=headers) as response:
-                _LOGGER.debug("Received response status: %s", response.status)
-                response_text = await response.text()
-                _LOGGER.debug("Received response text: %s", response_text)
-                if response.status == 200:
-                    result = await response.json()
-                    # Check if 'data' is present in the response and it is not empty
-                    if 'data' in result and result['data']:
-                        # Extract the image URL directly from the data array
-                        image_url = result['data'][0].get('url')
-                        if image_url:
-                            async with session.get(image_url) as image_response:
-                                if image_response.status == 200:
-                                    image_data = await image_response.read()
-                                    try:
-                                        os.makedirs('/config/www', exist_ok=True)  # Create the directory if it doesn't exist
-                                        # Generate a timestamped filename
-                                        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-                                        filename = f"dalle_{timestamp}.png"
-                                        file_path = f"/config/www/{filename}"
-                                        # Save the image with the timestamped filename
-                                        with open(file_path, 'wb') as file:
-                                            file.write(image_data)
-                                            _LOGGER.debug(f"Image saved as {filename} in the directory: /config/www")
-                                            # Convert the file path to a URL accessible within Home Assistant
-                                            # Full URL
-                                            full_image_url = f"{get_url(hass, allow_internal=True)}/local/{filename}"
-                                            hass.data[DOMAIN]['latest_image_full_url'] = full_image_url
-                                            # Local path
-                                            local_image_path = f"/local/{filename}"
-                                            hass.data[DOMAIN]['latest_image_local_path'] = local_image_path
-                                            # Log the URL that was saved to the domain
-                                            _LOGGER.debug(f"Latest image URL saved in domain: {full_image_url}")
-                                            # Send a dispatcher signal to notify that the image URL has been updated
-                                            dispatcher_send(hass, "update_weathercanvasai_image_sensor")
-                                            # Retrieve the max_images_retained value from your configuration
-                                            max_images_retained = hass.data[DOMAIN].get('max_images_retained', 5)  # Default to 5 if not set
-                                            # Call the function to clean up old images
-                                            await clean_up_images('/config/www', max_images_retained)
-                                            return full_image_url
-                                    except Exception as e:
-                                        _LOGGER.error("Error saving the image: %s", str(e))
-                                        return None  # Return None if there's an error
-                                else:
-                                    _LOGGER.error("Failed to download image: %s", image_response.status)
-                                    return None  # Return None if the image download failed
+            try:
+                async with session.post(openai_url, json=payload, headers=headers) as response:
+                    _LOGGER.debug("Received response status: %s", response.status)
+                    response_text = await response.text()
+                    _LOGGER.debug("Received response text: %s", response_text)
+                    if response.status == 200:
+                        result = await response.json()
+                        # Check if 'data' is present in the response and it is not empty
+                        if 'data' in result and result['data']:
+                            # Extract the image URL directly from the data array
+                            image_url = result['data'][0].get('url')
+                            if image_url:
+                                async with session.get(image_url) as image_response:
+                                    if image_response.status == 200:
+                                        image_data = await image_response.read()
+                                        try:
+                                            os.makedirs('/config/www', exist_ok=True)  # Create the directory if it doesn't exist
+                                            # Generate a timestamped filename
+                                            timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+                                            filename = f"dalle_{timestamp}.png"
+                                            file_path = f"/config/www/{filename}"
+                                            # Save the image with the timestamped filename
+                                            with open(file_path, 'wb') as file:
+                                                file.write(image_data)
+                                                _LOGGER.debug(f"Image saved as {filename} in the directory: /config/www")
+                                                # Convert the file path to a URL accessible within Home Assistant
+                                                # Full URL
+                                                full_image_url = f"{get_url(hass, allow_internal=True)}/local/{filename}"
+                                                hass.data[DOMAIN]['latest_image_full_url'] = full_image_url
+                                                # Local path
+                                                local_image_path = f"/local/{filename}"
+                                                hass.data[DOMAIN]['latest_image_local_path'] = local_image_path
+                                                # Log the URL that was saved to the domain
+                                                _LOGGER.debug(f"Latest image URL saved in domain: {full_image_url}")
+                                                # Send a dispatcher signal to notify that the image URL has been updated
+                                                dispatcher_send(hass, "update_weathercanvasai_image_sensor")
+                                                # Retrieve the max_images_retained value from your configuration
+                                                max_images_retained = hass.data[DOMAIN].get('max_images_retained', 5)  # Default to 5 if not set
+                                                # Call the function to clean up old images
+                                                await clean_up_images('/config/www', max_images_retained)
+                                                return full_image_url
+                                        except Exception as e:
+                                            _LOGGER.error("Error saving the image: %s", str(e))
+                                            return None  # Return None if there's an error
+                                    else:
+                                        _LOGGER.error("Failed to download image: %s", image_response.status)
+                                        return None  # Return None if the image download failed
+                            else:
+                                _LOGGER.error("No 'url' key in the response data.")
+                                return None
                         else:
-                            _LOGGER.error("No 'url' key in the response data.")
+                            _LOGGER.error("The 'data' key is missing or empty in the response.")
                             return None
                     else:
-                        _LOGGER.error("The 'data' key is missing or empty in the response.")
+                        _LOGGER.error("Failed to generate image with DALL-E: %s", response.status)
                         return None
-                else:
-                    _LOGGER.error("Failed to generate image with DALL-E: %s", response.status)
-                    return None
-        except Exception as e:
-            _LOGGER.error("Exception occurred while generating image with DALL-E: %s", str(e))
-            return None
+            except Exception as e:
+                _LOGGER.error("Exception occurred while generating image with DALL-E: %s", str(e))
+                return None
