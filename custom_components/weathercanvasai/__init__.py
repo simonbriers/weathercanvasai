@@ -20,23 +20,11 @@ import voluptuous as vol
 from homeassistant.helpers import config_validation as cv
 from .sensor import weathercanvasaiPromptsSensor
 from .weather_processing import (generate_dalle2_image, generate_dalle3_image)
-from .config_flow import WeatherImageGeneratorOptionsFlowHandler
 
 
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = ["sensor", "camera"] # Define the platforms that this integration supports
-
-# link the options flow handler to the config entry
-async def async_get_options_flow(config_entry):
-    return WeatherImageGeneratorOptionsFlowHandler(config_entry)
-
-# Define the update_listener function
-async def update_listener(hass: HomeAssistant, entry: ConfigEntry):
-    """Handle options update."""
-    _LOGGER.info("Configuration options updated. Reloading integration.")
-    await hass.config_entries.async_reload(entry.entry_id)
-
 
 async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the weathercanvasai component."""

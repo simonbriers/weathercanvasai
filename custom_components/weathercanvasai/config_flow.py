@@ -1,30 +1,29 @@
 import logging
-import json
-import openai
-import googlemaps
-import asyncio
 import voluptuous as vol
-
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
-
 from .api_util import test_openai_api, test_googlemaps_api
-
-
 from .const import DOMAIN
-
 
 _LOGGER = logging.getLogger(__name__)
 
-class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = 1
+STEP_USER_DATA_SCHEMA = vol.Schema({
+    vol.Required('openai_api_key', default="your openai api key here"): str,
+    vol.Required('googlemaps_api_key', default="your googlemaps api key here"): str,
+    vol.Required('gpt_model_name', default='gpt-3.5-turbo'): vol.In(['gpt-3.5-turbo', 'gpt-4']),
+    vol.Required('max_images_retained', default=5): int,
+    vol.Required('system_instruction', default="Create a succinct DALL-E prompt under 100 words, that will create an artistic image, focusing on the most visually striking aspects of the given city/region, weather, and time of day. Highlight key elements that define the scene's character, such as specific landmarks, weather effects, folklore or cultural features, in a direct and vivid manner. Avoid elaborate descriptions; instead, aim for a prompt that vividly captures the essence of the scene in a concise format, suitable for generating a distinct and compelling image."): str
+})
 
+
+class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+    """Handle a config flow for generating Weather Images."""
+
+    VERSION = 1
   
     def __init__(self):
         """Initialize the config flow."""
-        self.latitude = None
-        self.longitude = None
 
     async def async_step_user(self, user_input=None):
         """Handle the initial user input configuration step."""
@@ -64,18 +63,10 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 # Proceed to the location step
                 return await self.async_step_location()
             
-        # Initial form for API keys and model choices
-        data_schema = vol.Schema({
-            vol.Required('openai_api_key', default="your openai api key here"): str,
-            vol.Required('googlemaps_api_key', default="your googlemaps api key here"): str,
-            vol.Required('gpt_model_name', default='gpt-3.5-turbo'): vol.In(['gpt-3.5-turbo', 'gpt-4']),
-            vol.Required('max_images_retained', default=5): int,
-            vol.Required('system_instruction', default="Create a succinct DALL-E prompt under 100 words, that will create an artistic image, focusing on the most visually striking aspects of the given city/region, weather, and time of day. Highlight key elements that define the scene's character, such as specific landmarks, weather effects, folkore or cultural features, in a direct and vivid manner. Avoid elaborate descriptions; instead, aim for a prompt that vividly captures the essence of the scene in a concise format, suitable for generating a distinct and compelling image."): str
-            })
-
+ 
         # Show the form again with any errors
         return self.async_show_form(
-            step_id="user", data_schema=data_schema, errors=errors
+            step_id="user", data_schema= STEP_USER_DATA_SCHEMA, errors=errors
         )
 
     async def async_step_location(self, user_input=None):
@@ -109,20 +100,3 @@ class WeatherImageGeneratorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="location", data_schema=data_schema, errors=errors
         )
-
-class WeatherImageGeneratorOptionsFlowHandler(config_entries.OptionsFlow):
-    def __init__(self, config_entry):
-        self.config_entry = config_entry
-
-    async def async_step_init(self, user_input=None):
-        """Manage the options."""
-        if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
-
-        options = {
-            vol.Optional('gpt_model_name', 
-                         default=self.config_entry.options.get('gpt_model_name', 'gpt-3.5-turbo')): 
-                         vol.In(['gpt-3.5-turbo', 'gpt-4']),
-        }
-
-        return self.async_show_form(step_id="init", data_schema=vol.Schema(options))
