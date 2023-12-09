@@ -1,5 +1,6 @@
 import logging
 import datetime
+import asyncio
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.dispatcher import async_dispatcher_send
@@ -201,3 +202,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     _LOGGER.debug("Integration setup completed successfully.")
 
     return True
+
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Handle unloading of weathercanvasai integration."""
+    unload_ok = all(
+        await asyncio.gather(
+            *[hass.config_entries.async_forward_entry_unload(entry, platform) for platform in PLATFORMS]
+        )
+    )
+
+    # Deregister custom services
+    hass.services.async_remove(DOMAIN, 'create_chatgpt_prompt')
+    hass.services.async_remove(DOMAIN, 'create_dalle2_image')
+    hass.services.async_remove(DOMAIN, 'create_dalle3_image')
+
+    # Remove data stored in hass.data
+    if DOMAIN in hass.data:
+        hass.data.pop(DOMAIN)
+
+    return unload_ok

@@ -85,7 +85,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 return await self.async_step_location()
             
  
-        # Show the form again with any errors
+        # Show the form again with errors if any
         return self.async_show_form(
             step_id="user", data_schema= STEP_USER_DATA_SCHEMA, errors=errors
         )
