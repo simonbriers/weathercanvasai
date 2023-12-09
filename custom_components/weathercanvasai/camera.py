@@ -24,6 +24,9 @@ class weathercanvasaiCamera(Camera):
             "last_image_update": datetime.now().isoformat()
         }
         self._image_url = None
+        self._cached_image = None
+        self._cached_url = None
+
     
     async def async_added_to_hass(self):
         # This method is called when the camera is added to Home Assistant
@@ -42,9 +45,20 @@ class weathercanvasaiCamera(Camera):
         _LOGGER.debug("Fetching camera image.")
         _LOGGER.debug("Current image URL: %s", self._image_url)
         if self._image_url:
-            # Use Home Assistant's aiohttp_client session for HTTP requests
+            # Check if the URL has changed since the last fetch
+            if self._image_url == self._cached_url:
+                _LOGGER.debug("Returning cached image.")
+                return self._cached_image
+
+            # URL has changed, fetch new image
             session = async_get_clientsession(self.hass)
-            return await self._fetch_image_from_url(session, self._image_url)
+            new_image = await self._fetch_image_from_url(session, self._image_url)
+
+            # Update cache
+            self._cached_image = new_image
+            self._cached_url = self._image_url
+            return new_image
+
         _LOGGER.warning("No image URL set for camera; returning None.")
         return None
 
