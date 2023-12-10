@@ -4,7 +4,6 @@ import asyncio
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.dispatcher import async_dispatcher_send
-from .const import DOMAIN
 from .weather_processing import (
     async_calculate_day_segment, 
     get_season, 
@@ -22,6 +21,11 @@ from homeassistant.helpers import config_validation as cv
 from .sensor import weathercanvasaiPromptsSensor
 from .weather_processing import (generate_dalle2_image, generate_dalle3_image)
 
+from .const import (
+    DOMAIN,
+    CONF_MAX_IMAGES_RETAINED,
+    DEFAULT_MAX_IMAGES_RETAINED,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -42,6 +46,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     # Extract configuration data from the entry
     config_data = entry.data
+    # Retrieve max_images_retained from entry options or use a default value
+    max_images_retained = entry.options.get(CONF_MAX_IMAGES_RETAINED, DEFAULT_MAX_IMAGES_RETAINED)
 
     # Check if a temporary location name was stored during the config flow
     if 'temporary_location_name' in hass.data:
@@ -54,7 +60,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         "openai_api_key": config_data["openai_api_key"],
         "gpt_model_name": config_data["gpt_model_name"],
         "location_name": location_name,
-        "max_images_retained": config_data.get("max_images_retained", 5),
+        "max_images_retained": max_images_retained,  # Use the value from options
         "system_instruction": config_data.get("system_instruction")
     }
 

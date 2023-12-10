@@ -3,7 +3,7 @@ import logging
 import json
 import googlemaps
 
-from .const import DEFAULT_CHAT_MODEL
+from .const import DEFAULT_GPT_MODEL_NAME
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -16,7 +16,7 @@ async def test_openai_api(api_key):
         "Content-Type": "application/json"
     }
     data = {
-        "model": DEFAULT_CHAT_MODEL,
+        "model": DEFAULT_GPT_MODEL_NAME,
         "messages": [
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": "Say Test"}

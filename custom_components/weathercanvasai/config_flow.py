@@ -1,13 +1,21 @@
 import logging
+import types
+from types import MappingProxyType
 from typing import Any, Tuple
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
-from .api_util import test_openai_api, test_googlemaps_api
-from .const import DOMAIN
+from homeassistant.data_entry_flow import FlowResult
 
+from .api_util import test_openai_api, test_googlemaps_api
+from .const import (
+    CONF_MAX_IMAGES_RETAINED,
+    DEFAULT_MAX_IMAGES_RETAINED,
+    DOMAIN,
+)
 _LOGGER = logging.getLogger(__name__)
+
 
 STEP_USER_DATA_SCHEMA = vol.Schema({
     vol.Required('openai_api_key', default= None): str,
@@ -16,6 +24,13 @@ STEP_USER_DATA_SCHEMA = vol.Schema({
     vol.Required('max_images_retained', default=5): int,
     vol.Required('system_instruction', default="Create a succinct DALL-E prompt under 100 words, that will create an artistic image, focusing on the most visually striking aspects of the given city/region, weather, and time of day. Highlight key elements that define the scene's character, such as specific landmarks, weather effects, folklore or cultural features, in a direct and vivid manner. Avoid elaborate descriptions; instead, aim for a prompt that vividly captures the essence of the scene in a concise format, suitable for generating a distinct and compelling image."): str
 })
+
+
+DEFAULT_OPTIONS = types.MappingProxyType(
+    {
+        CONF_MAX_IMAGES_RETAINED: DEFAULT_MAX_IMAGES_RETAINED,
+    }
+)
 
 async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> Tuple[bool, str, str, str]:
     openai_api_key = data['openai_api_key']
@@ -121,3 +136,47 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="location", data_schema=data_schema, errors=errors
         )
+
+    @staticmethod
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> config_entries.OptionsFlow:
+        """Create the options flow."""
+        return OptionsFlow(config_entry)
+
+class OptionsFlow(config_entries.OptionsFlow):
+    """WeatherCanvas AI config flow options handler."""
+
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+        """Initialize options flow."""
+        self.config_entry = config_entry
+
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+        """Manage the options."""
+        if user_input is not None:
+            # Update the entry and hence options
+            return self.async_create_entry(title="Settings", data=user_input)
+        # Ensure the options schema is focused on max_images_retained
+        current_options = self.config_entry.options
+        schema = {
+            vol.Required(
+                CONF_MAX_IMAGES_RETAINED, 
+                default=current_options.get(CONF_MAX_IMAGES_RETAINED, DEFAULT_MAX_IMAGES_RETAINED)
+            ): int,
+        }
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(schema),
+        )
+    
+def openai_config_option_schema(options: MappingProxyType[str, Any]) -> dict:
+
+    if not options:
+        options = DEFAULT_OPTIONS
+    return {
+        vol.Optional(
+            CONF_MAX_IMAGES_RETAINED,
+            description={"Number of to retain in Home Assistant": options[CONF_MAX_IMAGES_RETAINED]},
+            default=DEFAULT_MAX_IMAGES_RETAINED,
+        ): int,
+    }
