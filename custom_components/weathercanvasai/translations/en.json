@@ -5,11 +5,18 @@
       "user": {
         "description": "Configure your API keys and preferences for the Weather Image Generator.",
         "data": {
-          "openai_api_key": "Your OpenAI API key for authentication.",
-          "googlemaps_api_key": "Your Google Maps API key for location services.",
+          "openai_api_key": "Your OpenAI API key.",
+          "googlemaps_api_key": "Your Google Maps API key.",
+          "gpt_model_name": "GPT model.",
+          "max_images_retained": "Number of images to retain.",
+          "system_instruction": "ChatGPT system Instruction."
+        },
+        "data_description": {
+          "openai_api_key": "Enter your OpenAI API key for authenticating with the OpenAI service.",
+          "googlemaps_api_key": "Your Google Maps API key is used for accessing location services.",
           "gpt_model_name": "Select the version of the GPT model to use for generating prompts.",
           "max_images_retained": "Specify the maximum number of images to retain in the system.",
-          "system_instruction": "Provide instructions to generate a DALL-E prompt based on location, weather, and time."
+          "system_instruction": "Instructions for generating a DALL-E prompt based on location, weather, and time."
         }
       }
     },
@@ -20,6 +27,24 @@
     },
     "abort": {
       "already_configured": "This device is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Customize Weather Canvas AI",
+        "description": "Update your settings for the Weather Canvas AI integration.",
+        "data": {
+          "max_images_retained": "Image Retention Count",
+          "gpt_model_name": "GPT Model",
+          "system_instruction": "System Instructions"
+        },
+        "data_description": {
+          "max_images_retained": "The number of images the system should retain. Older images beyond this count will be deleted.",
+          "gpt_model_name": "Choose which GPT model the system should use to generate prompts.",
+          "system_instruction": "Enter the instructions for the system to create a DALL-E prompt, considering factors like location and weather."
+        }
+      }
     }
   }
 }

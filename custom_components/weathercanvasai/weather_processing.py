@@ -248,7 +248,7 @@ async def post_request_and_save_image(hass, payload):
     async with aiohttp.ClientSession() as session:
             try:
                 async with session.post(openai_url, json=payload, headers=headers) as response:
-                    _LOGGER.debug("Received response status: %s", response.status)
+                    #_LOGGER.debug("Received response status: %s", response.status)
                     response_text = await response.text()
                     _LOGGER.debug("Received response text: %s", response_text)
                     if response.status == 200:
@@ -270,7 +270,7 @@ async def post_request_and_save_image(hass, payload):
                                             # Save the image with the timestamped filename
                                             with open(file_path, 'wb') as file:
                                                 file.write(image_data)
-                                                _LOGGER.debug(f"Image saved as {filename} in the directory: /config/www")
+                                                #_LOGGER.debug(f"Image saved as {filename} in the directory: /config/www")
                                                 # Convert the file path to a URL accessible within Home Assistant
                                                 # Full URL
                                                 full_image_url = f"{get_url(hass, allow_internal=True)}/local/{filename}"
@@ -279,7 +279,7 @@ async def post_request_and_save_image(hass, payload):
                                                 local_image_path = f"/local/{filename}"
                                                 hass.data[DOMAIN]['latest_image_local_path'] = local_image_path
                                                 # Log the URL that was saved to the domain
-                                                _LOGGER.debug(f"Latest image URL saved in domain: {full_image_url}")
+                                                #_LOGGER.debug(f"Latest image URL saved in domain: {full_image_url}")
                                                 # Send a dispatcher signal to notify that the image URL has been updated
                                                 dispatcher_send(hass, "update_weathercanvasai_image_sensor")
                                                 # Retrieve the max_images_retained value from your configuration

@@ -25,6 +25,11 @@ from .const import (
     DOMAIN,
     CONF_MAX_IMAGES_RETAINED,
     DEFAULT_MAX_IMAGES_RETAINED,
+    CONF_GPT_MODEL_NAME,
+    DEFAULT_GPT_MODEL_NAME,
+    CONF_SYSTEM_INSTRUCTION,
+    DEFAULT_SYSTEM_INSTRUCTION,
+
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -46,8 +51,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     # Extract configuration data from the entry
     config_data = entry.data
-    # Retrieve max_images_retained from entry options or use a default value
+    # Retrieve values for entry options or use a default value
     max_images_retained = entry.options.get(CONF_MAX_IMAGES_RETAINED, DEFAULT_MAX_IMAGES_RETAINED)
+    gpt_model_name = entry.options.get(CONF_GPT_MODEL_NAME, DEFAULT_GPT_MODEL_NAME)
+    system_instruction = entry.options.get(CONF_SYSTEM_INSTRUCTION, DEFAULT_SYSTEM_INSTRUCTION)
 
     # Check if a temporary location name was stored during the config flow
     if 'temporary_location_name' in hass.data:
@@ -55,17 +62,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     else:
         location_name = config_data.get("location_name", "Unknown Location")
 
+    _LOGGER.debug("Initial configuration data: %s", config_data)
+    _LOGGER.debug("Options being set: max_images_retained=%s, gpt_model_name=%s, system_instruction=%s", max_images_retained, gpt_model_name, system_instruction)
+
     # Store the configuration data in hass.data for the domain
     hass.data[DOMAIN] = {
         "openai_api_key": config_data["openai_api_key"],
-        "gpt_model_name": config_data["gpt_model_name"],
+        "gpt_model_name": gpt_model_name,
         "location_name": location_name,
         "max_images_retained": max_images_retained,  # Use the value from options
-        "system_instruction": config_data.get("system_instruction")
+        "system_instruction": system_instruction
     }
 
     _LOGGER.debug(f"{DOMAIN} configuration data set up: {hass.data[DOMAIN]}")
     
+    # reload the configuration and options data
+    entry.add_update_listener(options_update_listener)
+
     # Forward the setup to the sensor platform
     for platform in PLATFORMS:
         hass.async_create_task(
@@ -89,7 +102,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         chatgpt_in = f"In {location_name}, it is {day_segment} in {season}. {weather_prompt}"
 
         # Log the combined information
-        _LOGGER.debug(chatgpt_in)
+        #_LOGGER.debug(chatgpt_in)
 
         # Ensure chatgpt_in is not empty
         if not chatgpt_in:
@@ -227,3 +240,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data.pop(DOMAIN)
 
     return unload_ok
+
+async def options_update_listener(hass: HomeAssistant, entry: ConfigEntry):
+    """Handle options update."""
+    await hass.config_entries.async_reload(entry.entry_id)
+

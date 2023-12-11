@@ -42,12 +42,12 @@ class weathercanvasaiCamera(Camera):
 
     async def async_camera_image(self, width=None, height=None):
         """Return the image of this camera in bytes."""
-        _LOGGER.debug("Fetching camera image.")
-        _LOGGER.debug("Current image URL: %s", self._image_url)
+        #_LOGGER.debug("Fetching camera image.")
+        #_LOGGER.debug("Current image URL: %s", self._image_url)
         if self._image_url:
             # Check if the URL has changed since the last fetch
             if self._image_url == self._cached_url:
-                _LOGGER.debug("Returning cached image.")
+                #_LOGGER.debug("Returning cached image.")
                 return self._cached_image
 
             # URL has changed, fetch new image
@@ -88,7 +88,7 @@ class weathercanvasaiCamera(Camera):
     async def _update_image_url(self):
         # Fetch the latest image URL from the domain
         self._image_url = self.hass.data[DOMAIN].get('latest_image_full_url')
-        _LOGGER.debug(f"Camera image URL updated: {self._image_url}")
+        #_LOGGER.debug(f"Camera image URL updated: {self._image_url}")
 
     def camera_image(self):
         # Override this method to return the latest image from the stored URL

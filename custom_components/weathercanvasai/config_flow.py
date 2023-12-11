@@ -12,6 +12,10 @@ from .api_util import test_openai_api, test_googlemaps_api
 from .const import (
     CONF_MAX_IMAGES_RETAINED,
     DEFAULT_MAX_IMAGES_RETAINED,
+    CONF_GPT_MODEL_NAME,
+    DEFAULT_GPT_MODEL_NAME,
+    CONF_SYSTEM_INSTRUCTION,
+    DEFAULT_SYSTEM_INSTRUCTION,
     DOMAIN,
 )
 _LOGGER = logging.getLogger(__name__)
@@ -29,6 +33,8 @@ STEP_USER_DATA_SCHEMA = vol.Schema({
 DEFAULT_OPTIONS = types.MappingProxyType(
     {
         CONF_MAX_IMAGES_RETAINED: DEFAULT_MAX_IMAGES_RETAINED,
+        CONF_GPT_MODEL_NAME: DEFAULT_GPT_MODEL_NAME,
+        CONF_SYSTEM_INSTRUCTION: DEFAULT_SYSTEM_INSTRUCTION,
     }
 )
 
@@ -154,29 +160,33 @@ class OptionsFlow(config_entries.OptionsFlow):
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Manage the options."""
         if user_input is not None:
+            _LOGGER.debug("User input received: %s", user_input)
             # Update the entry and hence options
             return self.async_create_entry(title="Settings", data=user_input)
         # Ensure the options schema is focused on max_images_retained
-        current_options = self.config_entry.options
-        schema = {
-            vol.Required(
-                CONF_MAX_IMAGES_RETAINED, 
-                default=current_options.get(CONF_MAX_IMAGES_RETAINED, DEFAULT_MAX_IMAGES_RETAINED)
-            ): int,
-        }
+        schema = openai_config_option_schema(self.config_entry.options)
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema(schema),
         )
+
     
 def openai_config_option_schema(options: MappingProxyType[str, Any]) -> dict:
-
+    _LOGGER.debug("Generating options schema with options: %s", options)
     if not options:
         options = DEFAULT_OPTIONS
     return {
-        vol.Optional(
+        vol.Required(
             CONF_MAX_IMAGES_RETAINED,
-            description={"Number of to retain in Home Assistant": options[CONF_MAX_IMAGES_RETAINED]},
-            default=DEFAULT_MAX_IMAGES_RETAINED,
+            default=options.get(CONF_MAX_IMAGES_RETAINED, DEFAULT_MAX_IMAGES_RETAINED),
         ): int,
+        vol.Required(
+            CONF_GPT_MODEL_NAME,
+            default=options.get(CONF_GPT_MODEL_NAME, DEFAULT_GPT_MODEL_NAME),
+        ): str,
+        vol.Required(
+            CONF_SYSTEM_INSTRUCTION,
+            default=options.get(CONF_SYSTEM_INSTRUCTION, DEFAULT_SYSTEM_INSTRUCTION),
+        ): str,
     }
+  
